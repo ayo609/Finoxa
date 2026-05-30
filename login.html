@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Finoxa • Sign In</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --orange: #f97316;
+      --orange-light: #fb923c;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --text: #ffffff;
+      --text2: #a0a0a0;
+      --text3: #666666;
+      --border: rgba(255,255,255,0.06);
+      --danger: #ef4444;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Animated gradient background */
+    .bg-aura {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      opacity: 0.6;
+    }
+
+    .bg-aura::before {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%);
+      top: -200px;
+      right: -150px;
+      animation: auraMove 15s infinite alternate;
+    }
+
+    .bg-aura::after {
+      content: '';
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(239,68,68,0.08) 0%, transparent 70%);
+      bottom: -150px;
+      left: -100px;
+      animation: auraMove 18s infinite alternate-reverse;
+    }
+
+    @keyframes auraMove {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(50px, -30px) scale(1.1); }
+    }
+
+    /* Subtle grid */
+    .grid-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+    }
+
+    /* Floating particles */
+    .particle {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.5;
+    }
+
+    .particle-1 {
+      width: 8px; height: 8px;
+      background: #fb923c;
+      top: 15%; left: 10%;
+      animation: particleFloat 12s infinite;
+    }
+
+    .particle-2 {
+      width: 6px; height: 6px;
+      background: #fbbf24;
+      top: 70%; right: 15%;
+      animation: particleFloat 10s infinite 2s;
+    }
+
+    .particle-3 {
+      width: 4px; height: 4px;
+      background: #f87171;
+      bottom: 20%; left: 25%;
+      animation: particleFloat 14s infinite 4s;
+    }
+
+    .particle-4 {
+      width: 7px; height: 7px;
+      background: #fb923c;
+      top: 30%; right: 30%;
+      animation: particleFloat 11s infinite 6s;
+    }
+
+    @keyframes particleFloat {
+      0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+      25% { transform: translate(40px, -50px) scale(1.5); opacity: 0.8; }
+      50% { transform: translate(-30px, 30px) scale(0.8); opacity: 0.4; }
+      75% { transform: translate(-20px, -60px) scale(1.3); opacity: 0.6; }
+    }
+
+    /* Main wrapper */
+    .auth-wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+    }
+
+    /* Brand header */
+    .brand-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .brand-icon-wrap {
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, rgba(249,115,22,0.2) 0%, rgba(239,68,68,0.15) 100%);
+      border: 2px solid rgba(249,115,22,0.25);
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      backdrop-filter: blur(15px);
+    }
+
+    .brand-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #fb923c 0%, #f87171 50%, #fbbf24 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .brand-tagline {
+      color: rgba(255,255,255,0.35);
+      font-size: 0.85rem;
+      margin-top: 0.3rem;
+    }
+
+    /* Auth card */
+    .auth-card {
+      background: rgba(20, 20, 20, 0.8);
+      backdrop-filter: blur(30px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+    }
+
+    /* Tab switcher inside card */
+    .auth-tabs {
+      display: flex;
+      background: rgba(255,255,255,0.03);
+      border-radius: 14px;
+      padding: 4px;
+      margin-bottom: 2rem;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 0.7rem;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: rgba(255,255,255,0.4);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .auth-tab.active {
+      background: linear-gradient(135deg, rgba(249,115,22,0.25), rgba(239,68,68,0.15));
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(249,115,22,0.1);
+    }
+
+    /* Card inner header */
+    .card-inner-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .card-inner-header .emoji {
+      font-size: 2.5rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-inner-header h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+
+    .card-inner-header p {
+      color: rgba(255,255,255,0.4);
+      font-size: 0.85rem;
+    }
+
+    /* Form */
+    .form-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .field-block {
+      position: relative;
+    }
+
+    .field-block .field-label {
+      display: block;
+      color: rgba(255,255,255,0.5);
+      font-size: 0.73rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-group {
+      position: relative;
+    }
+
+    .input-group .input-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(249,115,22,0.4);
+      font-size: 0.9rem;
+      z-index: 2;
+      pointer-events: none;
+      transition: color 0.3s;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 0.9rem 1rem 0.9rem 2.8rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      color: #fff;
+      font-size: 0.9rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: all 0.3s;
+      outline: none;
+    }
+
+    .input-group input:focus {
+      border-color: #fb923c;
+      background: rgba(249,115,22,0.05);
+      box-shadow: 0 0 0 3px rgba(249,115,22,0.08);
+    }
+
+    .input-group input:focus ~ .input-icon {
+      color: #fb923c;
+    }
+
+    .input-group input::placeholder {
+      color: rgba(255,255,255,0.18);
+    }
+
+    .input-group input.input-error {
+      border-color: #ef4444;
+      background: rgba(239,68,68,0.04);
+    }
+
+    /* Password toggle */
+    .pw-toggle {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.3);
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 0.2rem;
+      z-index: 2;
+      transition: color 0.3s;
+    }
+
+    .pw-toggle:hover { color: #fb923c; }
+
+    /* Options row */
+    .options-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.82rem;
+    }
+
+    .remember-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: rgba(255,255,255,0.45);
+      cursor: pointer;
+    }
+
+    .remember-wrap input {
+      width: 16px; height: 16px;
+      accent-color: #fb923c;
+      cursor: pointer;
+    }
+
+    .forgot-link {
+      color: #fb923c;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.82rem;
+      transition: color 0.3s;
+    }
+
+    .forgot-link:hover {
+      color: #f97316;
+      text-decoration: underline;
+    }
+
+    /* Submit button */
+    .submit-btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+      border: none;
+      border-radius: 14px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 10px 30px rgba(249,115,22,0.3);
+      letter-spacing: 0.3px;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(249,115,22,0.45);
+      background: linear-gradient(135deg, #fb923c 0%, #f87171 100%);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Divider */
+    .divider-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: rgba(255,255,255,0.2);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .divider-row::before,
+    .divider-row::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.06);
+    }
+
+    /* Redirect */
+    .redirect-text {
+      text-align: center;
+      color: rgba(255,255,255,0.4);
+      font-size: 0.85rem;
+    }
+
+    .redirect-text a {
+      color: #fb923c;
+      text-decoration: none;
+      font-weight: 700;
+      margin-left: 0.3rem;
+      transition: color 0.3s;
+    }
+
+    .redirect-text a:hover { color: #f97316; }
+
+    /* Toast */
+    .toast-popup {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      z-index: 10000;
+      background: rgba(18,18,18,0.95);
+      backdrop-filter: blur(30px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 1rem 1.4rem;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      animation: toastIn 0.4s cubic-bezier(0.16,1,0.3,1);
+      min-width: 300px;
+      max-width: 420px;
+    }
+
+    .toast-popup.success { border-bottom: 3px solid #f59e0b; }
+    .toast-popup.error { border-bottom: 3px solid #ef4444; }
+    .toast-popup.warning { border-bottom: 3px solid #fb923c; }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .toast-icon-box {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0;
+    }
+
+    .toast-icon-box.success { background: rgba(245,158,11,0.12); color: #fbbf24; }
+    .toast-icon-box.error { background: rgba(239,68,68,0.12); color: #f87171; }
+    .toast-icon-box.warning { background: rgba(249,115,22,0.12); color: #fb923c; }
+
+    .toast-body h4 { font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 0.1rem; }
+    .toast-body p { font-size: 0.75rem; color: rgba(255,255,255,0.5); }
+
+    /* Spinner */
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .fa-spinner { animation: spin 0.8s linear infinite; }
+
+    /* Responsive */
+    @media (max-width: 500px) {
+      .auth-card { padding: 2rem 1.5rem; border-radius: 20px; }
+      .brand-name { font-size: 1.8rem; }
+      .brand-icon-wrap { width: 60px; height: 60px; font-size: 1.5rem; }
+      .toast-popup { left: 1rem; right: 1rem; min-width: auto; }
+      .options-row { flex-direction: column; align-items: flex-start; gap: 0.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background effects -->
+  <div class="bg-aura"></div>
+  <div class="grid-overlay"></div>
+  <div class="particle particle-1"></div>
+  <div class="particle particle-2"></div>
+  <div class="particle particle-3"></div>
+  <div class="particle particle-4"></div>
+
+  <!-- Auth wrapper -->
+  <div class="auth-wrapper">
+    
+    <!-- Brand -->
+    <div class="brand-header">
+      <div class="brand-icon-wrap">🔶</div>
+      <h1 class="brand-name">Finoxa</h1>
+      <p class="brand-tagline">Smart wealth. Smart future.</p>
+    </div>
+
+    <!-- Auth card -->
+    <div class="auth-card">
+      
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab" id="tabRegister" onclick="window.location.href='register.html'">Register</button>
+        <button class="auth-tab active" id="tabLogin">Sign In</button>
+      </div>
+
+      <!-- Card header -->
+      <div class="card-inner-header">
+        <span class="emoji">👋</span>
+        <h2>Welcome Back</h2>
+        <p>Sign in to access your account</p>
+      </div>
+
+      <!-- Form -->
+      <form id="loginForm" class="form-stack">
+        <!-- Email -->
+        <div class="field-block">
+          <label class="field-label">Email Address</label>
+          <div class="input-group">
+            <i class="fas fa-envelope input-icon"></i>
+            <input type="email" id="email" placeholder="Enter your email" required autocomplete="email" inputmode="email">
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="field-block">
+          <label class="field-label">Password</label>
+          <div class="input-group">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
+            <button type="button" class="pw-toggle" id="pwToggle">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Options -->
+        <div class="options-row">
+          <label class="remember-wrap">
+            <input type="checkbox" id="rememberMe">
+            <span>Remember me</span>
+          </label>
+          <a href="#" class="forgot-link" onclick="Swal.fire({icon:'info',title:'Password Reset',text:'Contact support via Telegram to reset your password.',confirmButtonColor:'#f97316'})">Forgot password?</a>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="submit-btn" id="loginBtn">
+          <i class="fas fa-sign-in-alt"></i> Sign In
+        </button>
+
+        <!-- Divider -->
+        <div class="divider-row">or</div>
+
+        <!-- Register link -->
+        <div class="redirect-text">
+          New to Finoxa? <a href="register.html">Create account</a>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <script type="module">
+    // 🔥 FIREBASE IMPORTS
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, browserSessionPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { getFirestore, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+    // 🔥 FIREBASE CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYw02OLQ-AOun_0YLzTd7DaCLsHQqHxGk",
+      authDomain: "finexo-3afc7.firebaseapp.com",
+      projectId: "finexo-3afc7",
+      storageBucket: "finexo-3afc7.firebasestorage.app",
+      messagingSenderId: "443358513817",
+      appId: "1:443358513817:web:756f9aa5e02dc05ca84608"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // 🔥 If already logged in, redirect to dashboard
+    onAuthStateChanged(auth, (user) => {
+      if (user && window.location.pathname.includes('login.html')) {
+        // User is signed in, but we only redirect if they just signed in
+        // Don't auto-redirect on page load to prevent loops
+      }
+    });
+
+    // 🔥 PASSWORD TOGGLE
+    const pwToggle = document.getElementById('pwToggle');
+    const passwordInput = document.getElementById('password');
+    let pwVisible = false;
+
+    pwToggle.addEventListener('click', () => {
+      pwVisible = !pwVisible;
+      const icon = pwToggle.querySelector('i');
+      
+      if (pwVisible) {
+        passwordInput.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        passwordInput.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    });
+
+    // 🔥 TOAST NOTIFICATION (bottom-right)
+    function showToast(title, message, type = 'success') {
+      // Remove existing toast
+      const existing = document.querySelector('.toast-popup');
+      if (existing) {
+        existing.style.opacity = '0';
+        existing.style.transform = 'translateY(20px)';
+        existing.style.transition = 'all 0.3s ease';
+        setTimeout(() => existing.remove(), 300);
+      }
+
+      const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        warning: 'fa-exclamation-triangle'
+      };
+
+      const toast = document.createElement('div');
+      toast.className = `toast-popup ${type}`;
+      toast.innerHTML = `
+        <div class="toast-icon-box ${type}">
+          <i class="fas ${icons[type]}"></i>
+        </div>
+        <div class="toast-body">
+          <h4>${title}</h4>
+          <p>${message}</p>
+        </div>
+      `;
+      document.body.appendChild(toast);
+
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(20px)';
+          toast.style.transition = 'all 0.3s ease';
+          setTimeout(() => {
+            if (toast.parentNode) toast.remove();
+          }, 300);
+        }
+      }, 5000);
+    }
+
+    // 🔥 LOAD SAVED EMAIL (Remember Me)
+    const savedEmail = localStorage.getItem('finoxa_email');
+    if (savedEmail) {
+      document.getElementById('email').value = savedEmail;
+      document.getElementById('rememberMe').checked = true;
+    }
+
+    // 🔥 FORM SUBMISSION
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const loginBtn = document.getElementById('loginBtn');
+      const emailInput = document.getElementById('email');
+      const passwordInputEl = document.getElementById('password');
+      const rememberMe = document.getElementById('rememberMe').checked;
+
+      const email = emailInput.value.trim();
+      const password = passwordInputEl.value;
+
+      // Reset input states
+      emailInput.classList.remove('input-error');
+      passwordInputEl.classList.remove('input-error');
+
+      // Validation
+      if (!email) {
+        emailInput.classList.add('input-error');
+        return showToast('Email Required', 'Please enter your email address', 'warning');
+      }
+      
+      if (!password) {
+        passwordInputEl.classList.add('input-error');
+        return showToast('Password Required', 'Please enter your password', 'warning');
+      }
+
+      if (password.length < 8) {
+        passwordInputEl.classList.add('input-error');
+        return showToast('Invalid Password', 'Password must be at least 8 characters', 'error');
+      }
+
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        emailInput.classList.add('input-error');
+        return showToast('Invalid Email', 'Please enter a valid email address', 'error');
+      }
+
+      // Disable button & show loading
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing In...';
+
+      try {
+        // Set persistence
+        const persistenceType = rememberMe ? browserLocalPersistence : browserSessionPersistence;
+        await setPersistence(auth, persistenceType);
+
+        // Sign in
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Handle Remember Me
+        if (rememberMe) {
+          localStorage.setItem('finoxa_email', email);
+        } else {
+          localStorage.removeItem('finoxa_email');
+        }
+
+        // Update last login in Firestore
+        try {
+          const userRef = doc(db, 'users', user.uid);
+          await updateDoc(userRef, {
+            lastLogin: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+          console.log('✅ Last login updated');
+        } catch (firestoreError) {
+          console.warn('⚠️ Could not update last login:', firestoreError.message);
+        }
+
+        // Success
+        showToast('✅ Welcome Back!', 'Sign in successful. Redirecting to dashboard...', 'success');
+
+        // Redirect
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1500);
+
+      } catch (error) {
+        console.error('❌ Login error:', error);
+
+        let errorTitle = 'Login Failed';
+        let errorMessage = 'An unexpected error occurred. Please try again.';
+
+        // Map Firebase errors
+        switch (error.code) {
+          case 'auth/invalid-email':
+            errorMessage = 'Invalid email format. Please check and try again.';
+            emailInput.classList.add('input-error');
+            break;
+          case 'auth/user-not-found':
+            errorMessage = 'No account found with this email address.';
+            emailInput.classList.add('input-error');
+            break;
+          case 'auth/wrong-password':
+            errorMessage = 'Incorrect password. Please try again.';
+            passwordInputEl.classList.add('input-error');
+            break;
+          case 'auth/invalid-credential':
+            errorMessage = 'Invalid email or password. Please check your credentials.';
+            emailInput.classList.add('input-error');
+            passwordInputEl.classList.add('input-error');
+            break;
+          case 'auth/too-many-requests':
+            errorTitle = 'Too Many Attempts';
+            errorMessage = 'Account temporarily locked. Please try again later or reset your password.';
+            break;
+          case 'auth/user-disabled':
+            errorMessage = 'This account has been disabled. Please contact support.';
+            break;
+          case 'auth/network-request-failed':
+            errorMessage = 'Network error. Please check your internet connection.';
+            break;
+          case 'auth/operation-not-allowed':
+            errorMessage = 'Email/Password sign-in is not enabled. Contact admin.';
+            break;
+          default:
+            errorMessage = error.message || 'Login failed. Please try again.';
+        }
+
+        showToast(errorTitle, errorMessage, 'error');
+
+        // Re-enable button
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+      }
+    });
+
+    // 🔥 ENTER KEY SUPPORT
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const activeEl = document.activeElement;
+        if (activeEl && (activeEl.id === 'email' || activeEl.id === 'password')) {
+          e.preventDefault();
+          document.getElementById('loginForm').dispatchEvent(new Event('submit', { cancelable: true }));
+        }
+      }
+    });
+
+    // 🔥 CLEAR ERROR ON INPUT
+    document.getElementById('email').addEventListener('input', function() {
+      this.classList.remove('input-error');
+    });
+
+    document.getElementById('password').addEventListener('input', function() {
+      this.classList.remove('input-error');
+    });
+
+    console.log('✅ Finoxa Login Page Ready');
+    console.log('🔥 Project:', firebaseConfig.projectId);
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body>
+</html>
