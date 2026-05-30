@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Finoxa • My Investments</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --surface2: #1a1a1a;
+      --orange: #f97316;
+      --orange-light: #fb923c;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --green: #22c55e;
+      --text: #ffffff;
+      --text2: #a0a0a0;
+      --text3: #666666;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.04);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 100px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: 
+        radial-gradient(ellipse at 0% 0%, rgba(249,115,22,0.05) 0%, transparent 50%),
+        radial-gradient(ellipse at 100% 100%, rgba(239,68,68,0.04) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app-content {
+      position: relative;
+      z-index: 1;
+      max-width: 650px;
+      margin: 0 auto;
+      padding: 1rem 1rem 100px;
+    }
+
+    /* Header */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.8rem 0;
+      margin-bottom: 1.2rem;
+    }
+
+    .back-link {
+      width: 42px;
+      height: 42px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+
+    .back-link:hover { border-color: rgba(255,255,255,0.2); color: #fff; }
+
+    .page-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .page-title i { color: var(--orange-light); }
+
+    .wallet-mini {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 0.5rem 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .wallet-mini i { color: var(--orange-light); font-size: 0.8rem; }
+    .wallet-mini span {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #fff;
+    }
+
+    /* Summary Cards */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.7rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1rem;
+    }
+
+    .summary-card.full { grid-column: 1 / -1; }
+
+    .sc-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .sc-icon.orange { background: rgba(249,115,22,0.12); color: #fb923c; }
+    .sc-icon.green { background: rgba(34,197,94,0.12); color: #4ade80; }
+    .sc-icon.amber { background: rgba(245,158,11,0.12); color: #fbbf24; }
+    .sc-icon.purple { background: rgba(168,85,247,0.12); color: #a78bfa; }
+
+    .sc-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .sc-label {
+      font-size: 0.65rem;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 600;
+      margin-top: 0.15rem;
+    }
+
+    /* Section title */
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-title i { color: var(--orange-light); }
+
+    .section-title .count-badge {
+      background: rgba(249,115,22,0.12);
+      color: var(--orange-light);
+      font-size: 0.7rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-weight: 700;
+    }
+
+    /* Investment Cards */
+    .invest-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .invest-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 1.2rem;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .invest-card:hover { border-color: rgba(255,255,255,0.1); }
+
+    .invest-card.completed {
+      opacity: 0.6;
+      border-color: var(--border2);
+    }
+
+    .invest-card.completed .completion-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(34,197,94,0.15);
+      color: #4ade80;
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 0.3rem 0.7rem;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .ic-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.8rem;
+    }
+
+    .ic-plan-info {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+
+    .ic-plan-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .ic-plan-icon.c1 { background: rgba(34,197,94,0.1); color: #4ade80; }
+    .ic-plan-icon.c2 { background: rgba(59,130,246,0.1); color: #60a5fa; }
+    .ic-plan-icon.c3 { background: rgba(239,68,68,0.1); color: #f87171; }
+    .ic-plan-icon.c4 { background: rgba(168,85,247,0.1); color: #a78bfa; }
+    .ic-plan-icon.c5 { background: rgba(249,115,22,0.15); color: #fb923c; }
+    .ic-plan-icon.c6 { background: rgba(245,158,11,0.1); color: #fbbf24; }
+    .ic-plan-icon.c7 { background: rgba(244,114,182,0.1); color: #f472b6; }
+    .ic-plan-icon.c8 { background: rgba(20,184,166,0.1); color: #2dd4bf; }
+    .ic-plan-icon.c9 { background: rgba(129,140,248,0.1); color: #818cf8; }
+    .ic-plan-icon.c10 { background: rgba(251,191,36,0.1); color: #fbbf24; }
+
+    .ic-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .ic-status {
+      font-size: 0.65rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 20px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .ic-status.active { background: rgba(34,197,94,0.1); color: #4ade80; }
+    .ic-status.completed { background: rgba(100,100,100,0.15); color: #888; }
+
+    /* Progress Bar */
+    .progress-wrap {
+      margin-bottom: 0.8rem;
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      color: var(--text2);
+      margin-bottom: 0.3rem;
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.5s ease;
+      background: linear-gradient(90deg, #f97316, #fb923c);
+    }
+
+    .progress-fill.complete {
+      background: linear-gradient(90deg, #22c55e, #4ade80);
+    }
+
+    /* Details grid */
+    .ic-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .ic-detail {
+      text-align: center;
+    }
+
+    .ic-detail .icd-value {
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+
+    .ic-detail .icd-value.green { color: #4ade80; }
+    .ic-detail .icd-value.amber { color: #fbbf24; }
+
+    .ic-detail .icd-label {
+      font-size: 0.6rem;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-top: 0.1rem;
+    }
+
+    /* Countdown Timer */
+    .countdown-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 0.8rem;
+      background: rgba(255,255,255,0.02);
+      border-radius: 10px;
+      font-size: 0.72rem;
+      color: var(--text2);
+    }
+
+    .countdown-row i {
+      color: var(--amber);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .countdown-row .countdown-time {
+      font-family: 'Space Grotesk', monospace;
+      font-weight: 700;
+      color: #fbbf24;
+      font-size: 0.85rem;
+    }
+
+    .countdown-row.credited {
+      color: #4ade80;
+    }
+
+    .countdown-row.credited i {
+      color: #4ade80;
+      animation: none;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+
+    .empty-state .empty-icon {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+      opacity: 0.3;
+    }
+
+    .empty-state h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+
+    .empty-state p {
+      color: var(--text2);
+      font-size: 0.85rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .browse-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.5rem;
+      background: linear-gradient(135deg, #f97316, #ef4444);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .browse-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(249,115,22,0.3); }
+
+    /* Loading */
+    .loading-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text3);
+    }
+
+    /* Bottom Nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(20,20,20,0.95);
+      backdrop-filter: blur(25px);
+      border: 1px solid var(--border);
+      border-radius: 60px;
+      padding: 0.5rem 0.7rem;
+      display: flex;
+      gap: 0.2rem;
+      z-index: 200;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    }
+
+    .nav-item {
+      padding: 0.5rem 0.9rem;
+      border-radius: 40px;
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 500;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .nav-item i { font-size: 0.95rem; }
+    .nav-item.active,
+    .nav-item:hover {
+      background: linear-gradient(135deg, rgba(249,115,22,0.2), rgba(239,68,68,0.1));
+      color: #fff;
+    }
+
+    .nav-item span { display: none; }
+
+    @media (min-width: 500px) {
+      .nav-item span { display: inline; }
+    }
+
+    @media (max-width: 400px) {
+      .ic-details { grid-template-columns: 1fr 1fr; }
+      .summary-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-content">
+    
+    <!-- Header -->
+    <div class="page-header">
+      <a href="dashboard.html" class="back-link">
+        <i class="fas fa-arrow-left"></i>
+      </a>
+      <div class="page-title">
+        <i class="fas fa-rocket"></i> My Investments
+      </div>
+      <div class="wallet-mini">
+        <i class="fas fa-wallet"></i>
+        <span id="headerBalance">₦0</span>
+      </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid" id="summaryGrid">
+      <div class="summary-card">
+        <div class="sc-icon orange"><i class="fas fa-chart-bar"></i></div>
+        <div class="sc-value" id="totalInvested">₦0</div>
+        <div class="sc-label">Total Invested</div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-icon green"><i class="fas fa-coins"></i></div>
+        <div class="sc-value" id="totalEarned">₦0</div>
+        <div class="sc-label">Total ROI Earned</div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-icon amber"><i class="fas fa-play-circle"></i></div>
+        <div class="sc-value" id="activeCount">0</div>
+        <div class="sc-label">Active Plans</div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-icon purple"><i class="fas fa-check-circle"></i></div>
+        <div class="sc-value" id="completedCount">0</div>
+        <div class="sc-label">Completed</div>
+      </div>
+    </div>
+
+    <!-- Active Plans -->
+    <div class="section-title">
+      <i class="fas fa-play-circle"></i> Active Plans
+      <span class="count-badge" id="activeBadge">0</span>
+    </div>
+    <div class="invest-list" id="activePlansList">
+      <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+    </div>
+
+    <!-- Completed Plans -->
+    <div class="section-title" style="margin-top:1rem;">
+      <i class="fas fa-check-circle"></i> Completed Plans
+      <span class="count-badge" id="completedBadge" style="background:rgba(100,100,100,0.15);color:#888;">0</span>
+    </div>
+    <div class="invest-list" id="completedPlansList">
+      <!-- Completed plans appear here -->
+    </div>
+
+  </div>
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <a href="home.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+    <a href="plans.html" class="nav-item"><i class="fas fa-layer-group"></i><span>Plans</span></a>
+    <a href="investment.html" class="nav-item active"><i class="fas fa-rocket"></i><span>Invest</span></a>
+    <a href="referral.html" class="nav-item"><i class="fas fa-users"></i><span>Referral</span></a>
+    <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-pie"></i><span>Dashboard</span></a>
+  </div>
+
+  <script type="module">
+    // 🔥 FIREBASE IMPORTS
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, getDocs, setDoc, collection, updateDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+    // 🔥 FIREBASE CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYw02OLQ-AOun_0YLzTd7DaCLsHQqHxGk",
+      authDomain: "finexo-3afc7.firebaseapp.com",
+      projectId: "finexo-3afc7",
+      storageBucket: "finexo-3afc7.firebasestorage.app",
+      messagingSenderId: "443358513817",
+      appId: "1:443358513817:web:756f9aa5e02dc05ca84608"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const fm = (v) => "₦" + Number(v || 0).toLocaleString();
+    let currentUser = null;
+    let userWallet = 0;
+    let allPlans = [];
+    let countdownIntervals = [];
+
+    // 🔥 FORMAT DATE
+    function formatDate(ts) {
+      if (!ts) return '—';
+      try {
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      } catch(e) { return '—'; }
+    }
+
+    // 🔥 FORMAT DATE + TIME
+    function formatDateTime(ts) {
+      if (!ts) return '—';
+      try {
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ', ' +
+               d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      } catch(e) { return '—'; }
+    }
+
+    // 🔥 GET TIME UNTIL NEXT PAYOUT
+    function getTimeUntil(nextPayoutDate) {
+      if (!nextPayoutDate) return { ready: false, hours: 0, mins: 0, secs: 0 };
+      
+      try {
+        const now = new Date();
+        const next = nextPayoutDate.toDate ? nextPayoutDate.toDate() : new Date(nextPayoutDate);
+        const diff = next.getTime() - now.getTime();
+        
+        if (diff <= 0) return { ready: true, hours: 0, mins: 0, secs: 0 };
+        
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        return { ready: false, hours, mins, secs };
+      } catch(e) {
+        return { ready: true, hours: 0, mins: 0, secs: 0 };
+      }
+    }
+
+    // 🔥 AUTO-CREDIT ROI
+    async function autoCreditROI(planData, planDocId) {
+      const userId = currentUser.uid;
+      const planRef = doc(db, `users/${userId}/activePlans`, planDocId);
+      
+      // Check if ROI is due
+      const timeCheck = getTimeUntil(planData.nextPayoutDate);
+      if (!timeCheck.ready || planData.status !== 'active' || planData.daysLeft <= 0) return false;
+
+      const dailyROI = planData.dailyEarning;
+      const newDaysLeft = planData.daysLeft - 1;
+      const newTotalEarned = (planData.totalEarned || 0) + dailyROI;
+      const newStatus = newDaysLeft <= 0 ? 'completed' : 'active';
+      
+      // Calculate next payout (24 hours from now)
+      const nextPayout = new Date(Date.now() + (24 * 60 * 60 * 1000));
+
+      try {
+        // Update plan
+        await updateDoc(planRef, {
+          daysLeft: newDaysLeft,
+          totalEarned: newTotalEarned,
+          lastPayoutDate: serverTimestamp(),
+          nextPayoutDate: nextPayout,
+          status: newStatus,
+          updatedAt: serverTimestamp()
+        });
+
+        // Credit wallet
+        const userRef = doc(db, 'users', userId);
+        await updateDoc(userRef, {
+          wallet: increment(dailyROI),
+          totalEarnings: increment(dailyROI),
+          updatedAt: serverTimestamp()
+        });
+
+        // Update active investments count if completed
+        if (newStatus === 'completed') {
+          await updateDoc(userRef, {
+            activeInvestments: increment(-1)
+          });
+        }
+
+        // Create transaction record
+        await setDoc(doc(collection(db, `users/${userId}/transactions`)), {
+          type: 'daily_roi',
+          amount: dailyROI,
+          status: 'completed',
+          description: `Daily ROI: ${planData.planName} - ${fm(dailyROI)} credited automatically`,
+          planId: planDocId,
+          planName: planData.planName,
+          daysRemaining: newDaysLeft,
+          createdAt: serverTimestamp()
+        });
+
+        console.log(`✅ Auto-credited ${fm(dailyROI)} from ${planData.planName}`);
+        return true;
+      } catch(e) {
+        console.error('Auto-credit error:', e);
+        return false;
+      }
+    }
+
+    // 🔥 LOAD INVESTMENTS
+    async function loadInvestments() {
+      const userId = currentUser.uid;
+      
+      try {
+        // Clear existing intervals
+        countdownIntervals.forEach(clearInterval);
+        countdownIntervals = [];
+
+        const plansSnap = await getDocs(collection(db, `users/${userId}/activePlans`));
+        allPlans = [];
+        
+        // Process each plan
+        for (const docSnap of plansSnap.docs) {
+          const planData = { id: docSnap.id, ...docSnap.data() };
+          
+          // 🔥 AUTO-CREDIT if ROI is due
+          const credited = await autoCreditROI(planData, docSnap.id);
+          
+          // Re-fetch if credited
+          if (credited) {
+            const updatedDoc = await getDoc(doc(db, `users/${userId}/activePlans`, docSnap.id));
+            if (updatedDoc.exists()) {
+              planData = { id: updatedDoc.id, ...updatedDoc.data() };
+            }
+          }
+          
+          allPlans.push(planData);
+        }
+
+        // Update wallet
+        const userDoc = await getDoc(doc(db, 'users', userId));
+        if (userDoc.exists()) {
+          userWallet = userDoc.data().wallet || 0;
+          document.getElementById('headerBalance').textContent = fm(userWallet);
+        }
+
+        // Render
+        renderInvestments();
+        
+        // Start countdown timers
+        startCountdowns();
+
+      } catch(e) {
+        console.error('Load error:', e);
+        document.getElementById('activePlansList').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">⚠️</div>
+            <h3>Error Loading</h3>
+            <p>Please refresh the page</p>
+          </div>`;
+      }
+    }
+
+    // 🔥 RENDER INVESTMENTS
+    function renderInvestments() {
+      const activePlans = allPlans.filter(p => p.status === 'active');
+      const completedPlans = allPlans.filter(p => p.status === 'completed');
+      
+      // Update summary
+      const totalInvested = allPlans.reduce((s, p) => s + (p.capital || 0), 0);
+      const totalEarned = allPlans.reduce((s, p) => s + (p.totalEarned || 0), 0);
+      
+      document.getElementById('totalInvested').textContent = fm(totalInvested);
+      document.getElementById('totalEarned').textContent = fm(totalEarned);
+      document.getElementById('activeCount').textContent = activePlans.length;
+      document.getElementById('completedCount').textContent = completedPlans.length;
+      document.getElementById('activeBadge').textContent = activePlans.length;
+      document.getElementById('completedBadge').textContent = completedPlans.length;
+
+      // Render active plans
+      const activeContainer = document.getElementById('activePlansList');
+      if (!activePlans.length) {
+        activeContainer.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📊</div>
+            <h3>No Active Investments</h3>
+            <p>Purchase a plan to start earning daily ROI</p>
+            <a href="plans.html" class="browse-btn">
+              <i class="fas fa-layer-group"></i> Browse Plans
+            </a>
+          </div>`;
+      } else {
+        activeContainer.innerHTML = activePlans.map(plan => renderPlanCard(plan)).join('');
+      }
+
+      // Render completed plans
+      const completedContainer = document.getElementById('completedPlansList');
+      if (!completedPlans.length) {
+        completedContainer.innerHTML = `
+          <div style="text-align:center;padding:1.5rem;color:var(--text3);font-size:0.8rem;">
+            No completed plans yet
+          </div>`;
+      } else {
+        completedContainer.innerHTML = completedPlans.map(plan => renderPlanCard(plan)).join('');
+      }
+    }
+
+    // 🔥 RENDER SINGLE PLAN CARD
+    function renderPlanCard(plan) {
+      const isCompleted = plan.status === 'completed';
+      const daysCompleted = plan.totalDays - (plan.daysLeft || 0);
+      const progressPercent = Math.round((daysCompleted / plan.totalDays) * 100);
+      const colorClass = 'c' + ((plan.planId || 1) % 10 + 1);
+      const timeCheck = getTimeUntil(plan.nextPayoutDate);
+
+      return `
+        <div class="invest-card ${isCompleted ? 'completed' : ''}" id="plan-${plan.id}">
+          ${isCompleted ? '<div class="completion-badge">✅ Completed</div>' : ''}
+
+          <div class="ic-top">
+            <div class="ic-plan-info">
+              <div class="ic-plan-icon ${colorClass}">${plan.planIcon || '📈'}</div>
+              <div>
+                <div class="ic-name">${plan.planName}</div>
+              </div>
+            </div>
+            <span class="ic-status ${isCompleted ? 'completed' : 'active'}">
+              ${isCompleted ? 'Completed' : 'Active'}
+            </span>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="progress-wrap">
+            <div class="progress-info">
+              <span>Day ${daysCompleted} of ${plan.totalDays}</span>
+              <span>${progressPercent}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill ${isCompleted ? 'complete' : ''}" 
+                   style="width:${progressPercent}%"></div>
+            </div>
+          </div>
+
+          <!-- Details -->
+          <div class="ic-details">
+            <div class="ic-detail">
+              <div class="icd-value">${fm(plan.capital)}</div>
+              <div class="icd-label">Capital</div>
+            </div>
+            <div class="ic-detail">
+              <div class="icd-value green">${fm(plan.dailyEarning)}</div>
+              <div class="icd-label">Daily ROI</div>
+            </div>
+            <div class="ic-detail">
+              <div class="icd-value green">${fm(plan.totalEarned || 0)}</div>
+              <div class="icd-label">Earned So Far</div>
+            </div>
+            <div class="ic-detail">
+              <div class="icd-value ${isCompleted ? '' : 'amber'}">${isCompleted ? '0' : (plan.daysLeft || 0)}</div>
+              <div class="icd-label">Days Left</div>
+            </div>
+            <div class="ic-detail">
+              <div class="icd-value">${formatDate(plan.startDate)}</div>
+              <div class="icd-label">Started</div>
+            </div>
+            <div class="ic-detail">
+              <div class="icd-value">${formatDate(plan.endDate)}</div>
+              <div class="icd-label">Ends</div>
+            </div>
+          </div>
+
+          <!-- Countdown / Status -->
+          ${!isCompleted ? `
+            <div class="countdown-row ${timeCheck.ready ? 'credited' : ''}" id="countdown-${plan.id}">
+              ${timeCheck.ready ? 
+                '<i class="fas fa-check-circle"></i> ROI ready! Refreshing...' :
+                `<i class="fas fa-hourglass-half"></i> Next auto-credit in: 
+                 <span class="countdown-time">${String(timeCheck.hours).padStart(2,'0')}:${String(timeCheck.mins).padStart(2,'0')}:${String(timeCheck.secs).padStart(2,'0')}</span>`
+              }
+            </div>
+          ` : `
+            <div class="countdown-row credited">
+              <i class="fas fa-trophy"></i> 
+              Total earned: <strong style="color:#4ade80;">${fm(plan.totalEarned || 0)}</strong> 
+              from ${fm(plan.capital)} investment
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    // 🔥 START COUNTDOWN TIMERS
+    function startCountdowns() {
+      const activePlans = allPlans.filter(p => p.status === 'active');
+      
+      activePlans.forEach(plan => {
+        const countdownEl = document.getElementById('countdown-' + plan.id);
+        if (!countdownEl) return;
+
+        const interval = setInterval(() => {
+          const timeCheck = getTimeUntil(plan.nextPayoutDate);
+          
+          if (timeCheck.ready) {
+            countdownEl.className = 'countdown-row credited';
+            countdownEl.innerHTML = '<i class="fas fa-check-circle"></i> ROI ready! Refresh page to claim';
+            clearInterval(interval);
+            return;
+          }
+
+          countdownEl.innerHTML = `
+            <i class="fas fa-hourglass-half"></i> Next auto-credit in: 
+            <span class="countdown-time">${String(timeCheck.hours).padStart(2,'0')}:${String(timeCheck.mins).padStart(2,'0')}:${String(timeCheck.secs).padStart(2,'0')}</span>
+          `;
+        }, 1000);
+
+        countdownIntervals.push(interval);
+      });
+    }
+
+    // 🔥 AUTH STATE
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'login.html'; return; }
+      currentUser = user;
+
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (!userDoc.exists()) { window.location.href = 'login.html'; return; }
+
+        userWallet = userDoc.data().wallet || 0;
+        document.getElementById('headerBalance').textContent = fm(userWallet);
+
+        // Load investments (auto-credits ROI if due)
+        await loadInvestments();
+
+      } catch(e) {
+        console.error('Auth error:', e);
+      }
+    });
+
+    // 🔥 Refresh every 60 seconds to check for ROI
+    setInterval(async () => {
+      if (currentUser) {
+        await loadInvestments();
+      }
+    }, 60000);
+
+    console.log('✅ Finoxa Investment Page Ready');
+    console.log('💰 Auto-credit ROI every 24 hours');
+  </script>
+</body>
+</html>
