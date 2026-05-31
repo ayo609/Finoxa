@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Finoxa • Withdraw Funds</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --surface2: #1a1a1a;
+      --orange: #f97316;
+      --orange-light: #fb923c;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --green: #22c55e;
+      --text: #ffffff;
+      --text2: #a0a0a0;
+      --text3: #666666;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.04);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 100px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: 
+        radial-gradient(ellipse at 0% 0%, rgba(249,115,22,0.05) 0%, transparent 50%),
+        radial-gradient(ellipse at 100% 100%, rgba(239,68,68,0.04) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app-content {
+      position: relative;
+      z-index: 1;
+      max-width: 550px;
+      margin: 0 auto;
+      padding: 1rem 1rem 100px;
+    }
+
+    /* Header */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.8rem 0;
+      margin-bottom: 1.2rem;
+    }
+
+    .back-link {
+      width: 42px; height: 42px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text2); text-decoration: none; font-size: 1rem;
+      transition: all 0.3s;
+    }
+    .back-link:hover { border-color: rgba(255,255,255,0.2); color: #fff; }
+
+    .page-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.3rem; font-weight: 700;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .page-title i { color: var(--orange-light); }
+
+    .wallet-mini {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 0.5rem 0.9rem;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .wallet-mini i { color: var(--orange-light); font-size: 0.8rem; }
+    .wallet-mini span {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700; font-size: 0.85rem; color: #fff;
+    }
+
+    /* Info Banner */
+    .info-banner {
+      background: rgba(249,115,22,0.06);
+      border: 1px solid rgba(249,115,22,0.12);
+      border-radius: 14px; padding: 0.9rem 1.1rem;
+      margin-bottom: 1.2rem; font-size: 0.75rem; color: var(--text2);
+      display: flex; align-items: flex-start; gap: 0.6rem; line-height: 1.5;
+    }
+    .info-banner i { color: var(--amber); margin-top: 2px; flex-shrink: 0; }
+    .info-banner strong { color: #fff; }
+
+    /* Balance Card */
+    .balance-card {
+      background: linear-gradient(160deg, #1a1a1a 0%, #1f1f1f 100%);
+      border: 1px solid var(--border);
+      border-radius: 18px; padding: 1.3rem; margin-bottom: 1.2rem;
+      text-align: center;
+    }
+    .balance-card .bc-label {
+      font-size: 0.65rem; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text3); margin-bottom: 0.3rem;
+    }
+    .balance-card .bc-amount {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.2rem; font-weight: 700;
+    }
+
+    /* Form Card */
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px; padding: 1.3rem; margin-bottom: 1rem;
+    }
+    .form-card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem; font-weight: 700;
+      margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .form-card h3 i { color: var(--orange-light); }
+
+    .field-group {
+      margin-bottom: 1rem;
+    }
+    .field-group label {
+      display: block; font-size: 0.72rem; color: var(--text3);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      font-weight: 600; margin-bottom: 0.4rem;
+    }
+    .field-group label .req { color: var(--red); }
+    .field-group input {
+      width: 100%; padding: 0.85rem 1rem;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      border-radius: 14px; color: #fff; font-size: 0.9rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      outline: none; transition: all 0.3s;
+    }
+    .field-group input:focus { border-color: var(--orange-light); }
+    .field-group input::placeholder { color: rgba(255,255,255,0.15); }
+
+    /* Calculation Card */
+    .calc-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border2);
+      border-radius: 14px; padding: 1rem; margin-bottom: 1rem;
+    }
+    .calc-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.4rem 0; font-size: 0.82rem;
+    }
+    .calc-row .cr-label { color: var(--text2); }
+    .calc-row .cr-value { font-weight: 600; }
+    .calc-row .cr-value.deduct { color: #f87171; }
+    .calc-row .cr-value.net { color: #4ade80; font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; }
+    .calc-divider { border-top: 1px solid var(--border2); margin: 0.4rem 0; }
+
+    /* Summary Card */
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px; padding: 1.3rem; margin-bottom: 1rem;
+      display: none;
+    }
+    .summary-card.visible { display: block; animation: fadeSlide 0.3s ease; }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .summary-card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem; font-weight: 700;
+      margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .summary-row {
+      display: flex; justify-content: space-between;
+      padding: 0.5rem 0; border-bottom: 1px solid var(--border2);
+      font-size: 0.82rem;
+    }
+    .summary-row:last-child { border: none; }
+    .summary-row .sr-label { color: var(--text2); }
+    .summary-row .sr-value { font-weight: 600; }
+
+    /* Buttons */
+    .btn {
+      width: 100%; padding: 0.9rem;
+      border: none; border-radius: 14px;
+      font-size: 0.9rem; font-weight: 700; cursor: pointer;
+      transition: all 0.3s; font-family: 'Plus Jakarta Sans', sans-serif;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #f97316, #ef4444);
+      color: #fff; box-shadow: 0 8px 25px rgba(249,115,22,0.25);
+    }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 35px rgba(249,115,22,0.4); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Success Panel */
+    .success-panel {
+      text-align: center; padding: 2rem 1rem; display: none;
+    }
+    .success-panel.visible { display: block; animation: popIn 0.5s ease; }
+    @keyframes popIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      60% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .success-circle {
+      width: 70px; height: 70px; background: rgba(34,197,94,0.1);
+      border: 3px solid var(--green); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; color: var(--green);
+      margin: 0 auto 1.2rem;
+    }
+    .success-panel h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; margin-bottom: 0.5rem; }
+    .success-panel p { color: var(--text2); font-size: 0.85rem; line-height: 1.6; }
+
+    /* History */
+    .history-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px; padding: 1.3rem; margin-bottom: 1rem;
+    }
+    .history-section h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem; font-weight: 700;
+      margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .history-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.6rem 0; border-bottom: 1px solid var(--border2);
+      font-size: 0.8rem;
+    }
+    .history-item:last-child { border: none; }
+    .history-item .hi-left { display: flex; align-items: center; gap: 0.5rem; }
+    .hi-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .hi-dot.pending { background: #fbbf24; }
+    .hi-dot.approved { background: #4ade80; }
+    .hi-dot.rejected { background: #f87171; }
+    .hi-amount { font-family: 'Space Grotesk', sans-serif; font-weight: 700; }
+    .hi-status { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 10px; font-weight: 600; }
+    .hi-status.pending { background: rgba(245,158,11,0.1); color: #fbbf24; }
+    .hi-status.approved { background: rgba(34,197,94,0.1); color: #4ade80; }
+    .hi-status.rejected { background: rgba(239,68,68,0.1); color: #f87171; }
+    .history-empty { text-align: center; padding: 1.5rem; color: var(--text3); font-size: 0.8rem; }
+
+    /* Bottom Nav */
+    .bottom-nav {
+      position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%);
+      background: rgba(20,20,20,0.95); backdrop-filter: blur(25px);
+      border: 1px solid var(--border); border-radius: 60px;
+      padding: 0.5rem 0.7rem; display: flex; gap: 0.2rem;
+      z-index: 200; box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    }
+    .nav-item {
+      padding: 0.5rem 0.9rem; border-radius: 40px;
+      color: var(--text2); text-decoration: none;
+      font-size: 0.8rem; font-weight: 500;
+      transition: all 0.3s; display: flex; align-items: center; gap: 0.4rem;
+    }
+    .nav-item i { font-size: 0.95rem; }
+    .nav-item.active,
+    .nav-item:hover { background: linear-gradient(135deg, rgba(249,115,22,0.2), rgba(239,68,68,0.1)); color: #fff; }
+    .nav-item span { display: none; }
+
+    @media (min-width: 500px) { .nav-item span { display: inline; } }
+  </style>
+</head>
+<body>
+
+  <div class="app-content">
+    
+    <!-- Header -->
+    <div class="page-header">
+      <a href="dashboard.html" class="back-link"><i class="fas fa-arrow-left"></i></a>
+      <div class="page-title"><i class="fas fa-arrow-down"></i> Withdraw Funds</div>
+      <div class="wallet-mini">
+        <i class="fas fa-wallet"></i>
+        <span id="headerBalance">₦0</span>
+      </div>
+    </div>
+
+    <!-- Info Banner -->
+    <div class="info-banner">
+      <i class="fas fa-info-circle"></i>
+      <span>
+        <strong>Withdrawal Rules:</strong> Min ₦1,000 • 15% charge • Mon-Sat • 8AM-5PM • No withdrawals on Sundays
+      </span>
+    </div>
+
+    <!-- Balance Card -->
+    <div class="balance-card">
+      <div class="bc-label">Available Balance</div>
+      <div class="bc-amount" id="balanceDisplay">₦0</div>
+    </div>
+
+    <!-- Withdrawal Form -->
+    <div id="formSection">
+      <div class="form-card">
+        <h3><i class="fas fa-coins"></i> Withdrawal Amount</h3>
+        
+        <div class="field-group">
+          <label>Enter Amount <span class="req">*</span></label>
+          <input type="number" id="withdrawAmount" placeholder="Min ₦1,000" min="1000" oninput="calculateWithdrawal()">
+        </div>
+
+        <!-- Real-time Calculation -->
+        <div class="calc-card" id="calcCard" style="display:none;">
+          <div class="calc-row">
+            <span class="cr-label">Withdrawal Amount</span>
+            <span class="cr-value" id="calcAmount">₦0</span>
+          </div>
+          <div class="calc-row">
+            <span class="cr-label">15% Service Charge</span>
+            <span class="cr-value deduct" id="calcCharge">-₦0</span>
+          </div>
+          <div class="calc-divider"></div>
+          <div class="calc-row">
+            <span class="cr-label">You Will Receive</span>
+            <span class="cr-value net" id="calcNet">₦0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bank Details -->
+      <div class="form-card">
+        <h3><i class="fas fa-university"></i> Bank Details</h3>
+        
+        <div class="field-group">
+          <label>Bank Name <span class="req">*</span></label>
+          <input type="text" id="bankName" placeholder="e.g. Access Bank, UBA, GTBank">
+        </div>
+
+        <div class="field-group">
+          <label>Account Number <span class="req">*</span></label>
+          <input type="text" id="accountNumber" placeholder="Enter your 10-digit account number" maxlength="10" inputmode="numeric">
+        </div>
+
+        <div class="field-group">
+          <label>Account Name <span class="req">*</span></label>
+          <input type="text" id="accountName" placeholder="Name on your bank account">
+        </div>
+      </div>
+
+      <!-- Summary Card -->
+      <div class="summary-card" id="summaryCard">
+        <h3><i class="fas fa-receipt"></i> Withdrawal Summary</h3>
+        <div class="summary-row">
+          <span class="sr-label">Amount</span>
+          <span class="sr-value" id="sumAmount">₦0</span>
+        </div>
+        <div class="summary-row">
+          <span class="sr-label">15% Charge</span>
+          <span class="sr-value" style="color:#f87171;" id="sumCharge">-₦0</span>
+        </div>
+        <div class="summary-row">
+          <span class="sr-label">Net Amount</span>
+          <span class="sr-value" style="color:#4ade80;" id="sumNet">₦0</span>
+        </div>
+        <div class="summary-row">
+          <span class="sr-label">Bank</span>
+          <span class="sr-value" id="sumBank">—</span>
+        </div>
+        <div class="summary-row">
+          <span class="sr-label">Account Number</span>
+          <span class="sr-value" id="sumAcctNum">—</span>
+        </div>
+        <div class="summary-row">
+          <span class="sr-label">Account Name</span>
+          <span class="sr-value" id="sumAcctName">—</span>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="submitWithdrawBtn" disabled>
+        <i class="fas fa-paper-plane"></i> Submit Withdrawal Request
+      </button>
+    </div>
+
+    <!-- Success Panel -->
+    <div class="success-panel" id="successPanel">
+      <div class="success-circle"><i class="fas fa-check"></i></div>
+      <h2>Withdrawal Submitted!</h2>
+      <p>Your withdrawal request has been submitted for processing.</p>
+      <p style="margin-top:0.5rem;">
+        <strong>Amount:</strong> <span id="successAmount">₦0</span><br>
+        <strong>Net Payable:</strong> <span id="successNet" style="color:#4ade80;">₦0</span>
+      </p>
+      <p style="margin-top:0.8rem;color:var(--amber);">⏱️ Processing within 1-6 hours during business days</p>
+      <button class="btn btn-primary" style="margin-top:1.5rem" onclick="location.href='dashboard.html'">
+        <i class="fas fa-home"></i> Back to Dashboard
+      </button>
+    </div>
+
+    <!-- Withdrawal History -->
+    <div class="history-section" id="historySection">
+      <h3><i class="fas fa-clock-rotate-left"></i> Recent Withdrawals</h3>
+      <div id="historyList">
+        <div class="history-empty">Loading history...</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <a href="home.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+    <a href="plans.html" class="nav-item"><i class="fas fa-layer-group"></i><span>Plans</span></a>
+    <a href="investment.html" class="nav-item"><i class="fas fa-rocket"></i><span>Invest</span></a>
+    <a href="referral.html" class="nav-item"><i class="fas fa-users"></i><span>Referral</span></a>
+    <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-pie"></i><span>Dashboard</span></a>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, getDocs, collection, updateDoc, increment, serverTimestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+    // 🔥 FIREBASE CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYw02OLQ-AOun_0YLzTd7DaCLsHQqHxGk",
+      authDomain: "finexo-3afc7.firebaseapp.com",
+      projectId: "finexo-3afc7",
+      storageBucket: "finexo-3afc7.firebasestorage.app",
+      messagingSenderId: "443358513817",
+      appId: "1:443358513817:web:756f9aa5e02dc05ca84608"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const fm = (v) => "₦" + Number(v || 0).toLocaleString();
+    const MIN_WITHDRAWAL = 1000;
+    const CHARGE_PERCENT = 15;
+
+    let currentUser = null;
+    let userData = null;
+    let userWallet = 0;
+
+    // 🔥 FORMAT DATE
+    function fmtDate(ts) {
+      if (!ts) return '—';
+      try {
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      } catch(e) { return '—'; }
+    }
+
+    // 🔥 CHECK BUSINESS HOURS
+    function isBusinessHours() {
+      const now = new Date();
+      const day = now.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+      const hour = now.getHours();
+      
+      if (day === 0) return false; // Sunday
+      if (day === 6 && hour >= 17) return false; // Saturday after 5PM
+      if (hour < 8 || hour >= 17) return false; // Outside 8AM-5PM
+      
+      return true;
+    }
+
+    // 🔥 AUTH
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'login.html'; return; }
+      currentUser = user;
+
+      try {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (!snap.exists()) { window.location.href = 'login.html'; return; }
+
+        userData = snap.data();
+        userWallet = userData.wallet || 0;
+
+        document.getElementById('headerBalance').textContent = fm(userWallet);
+        document.getElementById('balanceDisplay').textContent = fm(userWallet);
+
+        // Load withdrawal history
+        loadWithdrawalHistory();
+
+      } catch(e) { console.error('Auth error:', e); }
+    });
+
+    // 🔥 CALCULATE WITHDRAWAL
+    window.calculateWithdrawal = function() {
+      const amount = Number(document.getElementById('withdrawAmount').value) || 0;
+      const calcCard = document.getElementById('calcCard');
+      const summaryCard = document.getElementById('summaryCard');
+      const submitBtn = document.getElementById('submitWithdrawBtn');
+
+      if (amount >= MIN_WITHDRAWAL && amount <= userWallet) {
+        const charge = Math.floor(amount * CHARGE_PERCENT / 100);
+        const netAmount = amount - charge;
+
+        // Show calculation
+        calcCard.style.display = 'block';
+        document.getElementById('calcAmount').textContent = fm(amount);
+        document.getElementById('calcCharge').textContent = '- ' + fm(charge);
+        document.getElementById('calcNet').textContent = fm(netAmount);
+
+        // Update summary
+        document.getElementById('sumAmount').textContent = fm(amount);
+        document.getElementById('sumCharge').textContent = '- ' + fm(charge);
+        document.getElementById('sumNet').textContent = fm(netAmount);
+
+        // Update bank details in summary
+        const bankName = document.getElementById('bankName').value.trim() || '—';
+        const acctNum = document.getElementById('accountNumber').value.trim() || '—';
+        const acctName = document.getElementById('accountName').value.trim() || '—';
+        document.getElementById('sumBank').textContent = bankName;
+        document.getElementById('sumAcctNum').textContent = acctNum;
+        document.getElementById('sumAcctName').textContent = acctName;
+
+        // Show summary
+        summaryCard.classList.add('visible');
+
+        // Enable submit if all fields filled
+        const allFilled = bankName !== '—' && acctNum !== '—' && acctName !== '—' && 
+                          bankName && acctNum && acctName;
+        submitBtn.disabled = !allFilled;
+      } else {
+        calcCard.style.display = 'none';
+        summaryCard.classList.remove('visible');
+        submitBtn.disabled = true;
+      }
+    };
+
+    // Update summary when bank fields change
+    ['bankName', 'accountNumber', 'accountName'].forEach(id => {
+      document.getElementById(id).addEventListener('input', () => calculateWithdrawal());
+    });
+
+    // 🔥 SUBMIT WITHDRAWAL
+    document.getElementById('submitWithdrawBtn').addEventListener('click', async () => {
+      const amount = Number(document.getElementById('withdrawAmount').value) || 0;
+      const bankName = document.getElementById('bankName').value.trim();
+      const accountNumber = document.getElementById('accountNumber').value.trim();
+      const accountName = document.getElementById('accountName').value.trim();
+
+      // Validation
+      if (amount < MIN_WITHDRAWAL) {
+        return Swal.fire({ icon: 'warning', title: 'Invalid Amount', text: `Minimum withdrawal is ${fm(MIN_WITHDRAWAL)}`, confirmButtonColor: '#f97316' });
+      }
+
+      if (amount > userWallet) {
+        return Swal.fire({ icon: 'warning', title: 'Insufficient Balance', text: `You only have ${fm(userWallet)} available`, confirmButtonColor: '#f97316' });
+      }
+
+      if (!bankName) {
+        return Swal.fire({ icon: 'warning', title: 'Bank Name Required', text: 'Please enter your bank name', confirmButtonColor: '#f97316' });
+      }
+
+      if (!accountNumber || accountNumber.length < 10) {
+        return Swal.fire({ icon: 'warning', title: 'Invalid Account', text: 'Please enter a valid 10-digit account number', confirmButtonColor: '#f97316' });
+      }
+
+      if (!accountName) {
+        return Swal.fire({ icon: 'warning', title: 'Account Name Required', text: 'Please enter your account name', confirmButtonColor: '#f97316' });
+      }
+
+      // Business hours check (warning only)
+      if (!isBusinessHours()) {
+        const result = await Swal.fire({
+          icon: 'info',
+          title: 'Outside Business Hours',
+          text: 'Withdrawals are processed Mon-Sat, 8AM-5PM. Your request will be processed on the next business day. Continue?',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, Submit Anyway',
+          cancelButtonText: 'Cancel',
+          confirmButtonColor: '#f97316',
+          cancelButtonColor: '#6b7280'
+        });
+        if (!result.isConfirmed) return;
+      }
+
+      const charge = Math.floor(amount * CHARGE_PERCENT / 100);
+      const netAmount = amount - charge;
+
+      // Confirm
+      const confirmResult = await Swal.fire({
+        title: 'Confirm Withdrawal',
+        html: `
+          <div style="text-align:left;background:rgba(255,255,255,0.02);border-radius:12px;padding:1rem;margin:0.5rem 0;font-size:0.82rem;">
+            <p style="margin:0.3rem 0"><strong>Amount:</strong> ${fm(amount)}</p>
+            <p style="margin:0.3rem 0"><strong>15% Charge:</strong> -${fm(charge)}</p>
+            <p style="margin:0.3rem 0"><strong>Net Payable:</strong> <span style="color:#4ade80;">${fm(netAmount)}</span></p>
+            <p style="margin:0.3rem 0"><strong>Bank:</strong> ${bankName}</p>
+            <p style="margin:0.3rem 0"><strong>Account:</strong> ${accountNumber}</p>
+            <p style="margin:0.3rem 0"><strong>Name:</strong> ${accountName}</p>
+          </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Confirm Withdrawal',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#f97316',
+        cancelButtonColor: '#6b7280'
+      });
+
+      if (!confirmResult.isConfirmed) return;
+
+      // Show loading
+      Swal.fire({
+        title: 'Processing...',
+        html: 'Submitting your withdrawal request...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      try {
+        const withdrawalId = 'WTH_' + Date.now();
+
+        // Create withdrawal record
+        await setDoc(doc(db, `users/${currentUser.uid}/withdrawals`, withdrawalId), {
+          withdrawalId: withdrawalId,
+          userId: currentUser.uid,
+          username: userData?.fullName || 'User',
+          userEmail: userData?.email || currentUser.email || '',
+          amount: amount,
+          charge: charge,
+          netAmount: netAmount,
+          bankName: bankName,
+          accountNumber: accountNumber,
+          accountName: accountName,
+          status: 'pending',
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+
+        // Deduct from wallet
+        const userRef = doc(db, 'users', currentUser.uid);
+        await updateDoc(userRef, {
+          wallet: increment(-amount),
+          totalWithdrawals: increment(amount),
+          updatedAt: serverTimestamp()
+        });
+
+        // Create transaction record
+        await setDoc(doc(collection(db, `users/${currentUser.uid}/transactions`)), {
+          type: 'withdrawal',
+          amount: amount,
+          status: 'pending',
+          description: `Withdrawal to ${bankName} (${accountNumber}) - Net: ${fm(netAmount)} after 15% charge`,
+          withdrawalId: withdrawalId,
+          createdAt: serverTimestamp()
+        });
+
+        console.log('✅ Withdrawal submitted:', withdrawalId);
+
+        // Update local wallet
+        userWallet -= amount;
+        document.getElementById('headerBalance').textContent = fm(userWallet);
+        document.getElementById('balanceDisplay').textContent = fm(userWallet);
+
+        // Update success panel
+        document.getElementById('successAmount').textContent = fm(amount);
+        document.getElementById('successNet').textContent = fm(netAmount);
+
+        // Hide form, show success
+        Swal.close();
+        document.getElementById('formSection').style.display = 'none';
+        document.getElementById('successPanel').classList.add('visible');
+        document.getElementById('historySection').style.display = 'none';
+
+      } catch(err) {
+        console.error('❌ Withdrawal error:', err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Submission Failed',
+          text: err.message || 'An error occurred. Please try again.',
+          confirmButtonColor: '#ef4444'
+        });
+      }
+    });
+
+    // 🔥 LOAD WITHDRAWAL HISTORY
+    async function loadWithdrawalHistory() {
+      const container = document.getElementById('historyList');
+
+      try {
+        const q = query(collection(db, `users/${currentUser.uid}/withdrawals`), orderBy('createdAt', 'desc'), limit(5));
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+          container.innerHTML = '<div class="history-empty">No withdrawal history yet</div>';
+          return;
+        }
+
+        let html = '';
+        snap.forEach(doc => {
+          const w = doc.data();
+          const statusClass = w.status || 'pending';
+          const dateStr = fmtDate(w.createdAt);
+
+          html += `
+            <div class="history-item">
+              <div class="hi-left">
+                <div class="hi-dot ${statusClass}"></div>
+                <div>
+                  <div>${fm(w.amount)} → ${w.bankName || 'Bank'}</div>
+                  <div style="font-size:0.65rem;color:var(--text3);">${dateStr}</div>
+                </div>
+              </div>
+              <span class="hi-status ${statusClass}">${w.status || 'Pending'}</span>
+            </div>
+          `;
+        });
+
+        container.innerHTML = html;
+
+      } catch(e) {
+        container.innerHTML = '<div class="history-empty">Could not load history</div>';
+      }
+    }
+
+    console.log('✅ Finoxa Withdrawal Page Ready');
+    console.log('💰 Min: ₦1,000 | Charge: 15% | Mon-Sat 8AM-5PM');
+  </script>
+</body>
+</html>
