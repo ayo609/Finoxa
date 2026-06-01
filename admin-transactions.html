@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Finoxa Admin • Transaction Logs</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root {
+      --bg: #0a0a0a; --surface: #141414; --surface2: #1a1a1a;
+      --admin: #dc2626; --admin-light: #ef4444;
+      --orange: #f97316; --amber: #f59e0b; --green: #22c55e;
+      --text: #ffffff; --text2: #a0a0a0; --text3: #666666;
+      --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.04);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; overflow-x: hidden;
+    }
+
+    /* ============ TOAST ============ */
+    .admin-toast {
+      position: fixed; bottom: 25px; right: 25px; z-index: 10000;
+      background: rgba(18,18,18,0.95); backdrop-filter: blur(30px);
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;
+      padding: 0.9rem 1.2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      display: flex; align-items: center; gap: 0.8rem;
+      animation: toastIn 0.4s ease; min-width: 300px; max-width: 420px;
+    }
+    .admin-toast.success { border-bottom: 3px solid #22c55e; }
+    .admin-toast.error { border-bottom: 3px solid #ef4444; }
+    .admin-toast.warning { border-bottom: 3px solid #f59e0b; }
+    .admin-toast.info { border-bottom: 3px solid #60a5fa; }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .toast-icon-bx {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; flex-shrink: 0;
+    }
+    .toast-icon-bx.success { background: rgba(34,197,94,0.12); color: #4ade80; }
+    .toast-icon-bx.error { background: rgba(239,68,68,0.12); color: #f87171; }
+    .toast-icon-bx.warning { background: rgba(245,158,11,0.12); color: #fbbf24; }
+    .toast-icon-bx.info { background: rgba(96,165,250,0.12); color: #60a5fa; }
+    .toast-txt h4 { font-size: 0.8rem; font-weight: 700; color: #fff; margin-bottom: 0.1rem; }
+    .toast-txt p { font-size: 0.7rem; color: rgba(255,255,255,0.5); }
+
+    /* ============ SIDEBAR ============ */
+    .sidebar {
+      width: 250px; height: 100vh; background: var(--surface);
+      border-right: 1px solid var(--border); padding: 1.5rem;
+      display: flex; flex-direction: column; position: fixed;
+      left: 0; top: 0; z-index: 100; transition: transform 0.3s;
+    }
+    .sidebar-brand {
+      display: flex; align-items: center; gap: 0.7rem;
+      margin-bottom: 2rem; padding-bottom: 1.2rem; border-bottom: 1px solid var(--border);
+    }
+    .sidebar-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(249,115,22,0.15));
+      border: 2px solid rgba(239,68,68,0.3); border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; font-size: 1rem;
+    }
+    .sidebar-brand h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1rem; font-weight: 700;
+      background: linear-gradient(135deg, #f87171, #fb923c, #fbbf24);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .admin-tag { font-size: 0.6rem; color: #f87171; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+
+    .sidebar-nav { display: flex; flex-direction: column; gap: 0.2rem; flex: 1; }
+    .sidebar-nav a {
+      display: flex; align-items: center; gap: 0.7rem;
+      padding: 0.65rem 0.85rem; border-radius: 10px;
+      color: var(--text2); text-decoration: none;
+      font-weight: 500; font-size: 0.83rem; transition: all 0.3s;
+    }
+    .sidebar-nav a:hover, .sidebar-nav a.active {
+      background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(249,115,22,0.08));
+      color: #fff;
+    }
+    .sidebar-nav a i { width: 18px; text-align: center; }
+
+    .sidebar-user {
+      margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .sidebar-avatar {
+      width: 36px; height: 36px; background: linear-gradient(135deg, #dc2626, #ef4444);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.8rem;
+    }
+    .sidebar-user-info { flex: 1; min-width: 0; }
+    .sidebar-user-info .uname { font-weight: 600; font-size: 0.78rem; }
+    .sidebar-user-info .urole { color: #f87171; font-size: 0.62rem; }
+    .sidebar-logout {
+      background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 8px; color: #f87171; cursor: pointer;
+      font-size: 0.8rem; padding: 0.35rem 0.55rem; transition: all 0.3s;
+    }
+    .sidebar-logout:hover { background: rgba(239,68,68,0.2); }
+
+    /* ============ MAIN CONTENT ============ */
+    .main-content {
+      flex: 1; margin-left: 250px; padding: 1.5rem 2rem; min-height: 100vh;
+    }
+
+    .menu-toggle {
+      display: none; position: fixed; top: 1rem; left: 1rem; z-index: 200;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; width: 40px; height: 40px;
+      align-items: center; justify-content: center;
+      color: #fff; font-size: 1.1rem; cursor: pointer;
+    }
+
+    .page-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+    }
+    .page-header h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem; font-weight: 700;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .page-header h1 i { color: #f87171; }
+
+    /* Summary */
+    .summary-row {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 0.8rem; margin-bottom: 1.5rem;
+    }
+    .summary-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1rem; text-align: center;
+    }
+    .summary-card .sv {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.3rem; font-weight: 700;
+    }
+    .summary-card .sv.green { color: #4ade80; }
+    .summary-card .sv.amber { color: #fbbf24; }
+    .summary-card .sv.blue { color: #60a5fa; }
+    .summary-card .sv.purple { color: #a78bfa; }
+    .summary-card .sv.white { color: #fff; }
+    .summary-card .sl {
+      font-size: 0.62rem; color: var(--text3);
+      text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.2rem;
+    }
+
+    /* Filter Tabs */
+    .filter-tabs {
+      display: flex; gap: 0.3rem; margin-bottom: 1.2rem; flex-wrap: wrap;
+    }
+    .filter-tab {
+      padding: 0.45rem 0.8rem; border-radius: 20px;
+      font-size: 0.7rem; font-weight: 600; cursor: pointer;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--text2); transition: all 0.3s;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .filter-tab:hover { border-color: rgba(255,255,255,0.2); }
+    .filter-tab.active { background: var(--admin); color: #fff; border-color: var(--admin); }
+
+    /* Search */
+    .search-wrap {
+      position: relative; margin-bottom: 1rem; max-width: 400px;
+    }
+    .search-wrap input {
+      width: 100%; padding: 0.65rem 1rem 0.65rem 2.4rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; color: #fff; font-size: 0.82rem;
+      font-family: 'Plus Jakarta Sans', sans-serif; outline: none;
+    }
+    .search-wrap i {
+      position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%);
+      color: var(--text3); font-size: 0.75rem;
+    }
+
+    /* Table */
+    .table-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden; margin-bottom: 1rem;
+    }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+    th {
+      text-align: left; padding: 0.7rem 0.7rem;
+      color: var(--text3); font-weight: 600; font-size: 0.62rem;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 0.6rem 0.7rem; border-bottom: 1px solid var(--border2);
+      white-space: nowrap;
+    }
+    tr:hover td { background: rgba(255,255,255,0.01); }
+
+    .type-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      padding: 0.2rem 0.5rem; border-radius: 10px;
+      font-size: 0.62rem; font-weight: 700;
+    }
+    .type-badge.deposit { background: rgba(34,197,94,0.1); color: #4ade80; }
+    .type-badge.withdrawal { background: rgba(245,158,11,0.1); color: #fbbf24; }
+    .type-badge.roi { background: rgba(59,130,246,0.1); color: #60a5fa; }
+    .type-badge.referral { background: rgba(244,114,182,0.1); color: #f472b6; }
+    .type-badge.bonus { background: rgba(168,85,247,0.1); color: #a78bfa; }
+    .type-badge.investment { background: rgba(249,115,22,0.1); color: #fb923c; }
+    .type-badge.credit { background: rgba(34,197,94,0.1); color: #4ade80; }
+    .type-badge.debit { background: rgba(239,68,68,0.1); color: #f87171; }
+
+    .status-dot {
+      display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 0.3rem;
+    }
+    .status-dot.completed { background: #4ade80; }
+    .status-dot.pending { background: #fbbf24; }
+    .status-dot.failed { background: #f87171; }
+
+    .empty-state { text-align: center; padding: 3rem; color: var(--text3); }
+    .empty-state i { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.3; }
+
+    /* Pagination */
+    .pagination {
+      display: flex; justify-content: center; gap: 0.3rem; padding: 1rem;
+    }
+    .page-btn {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text2); cursor: pointer; font-size: 0.7rem;
+      font-weight: 600; transition: all 0.3s;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .page-btn:hover, .page-btn.active {
+      background: var(--admin); color: #fff; border-color: var(--admin);
+    }
+    .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .summary-row { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; padding: 1rem; }
+      .menu-toggle { display: flex; }
+      .page-header h1 { font-size: 1.2rem; }
+      .summary-row { grid-template-columns: 1fr 1fr; }
+      .admin-toast { left: 1rem; right: 1rem; min-width: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">🛡️</div>
+      <div><h2>Finoxa</h2><div class="admin-tag">Admin Panel</div></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="admin-index.html"><i class="fas fa-grid-2"></i> Dashboard</a>
+      <a href="admin-users.html"><i class="fas fa-users"></i> Users</a>
+      <a href="admin-deposits.html"><i class="fas fa-arrow-down"></i> Deposits</a>
+      <a href="admin-withdrawals.html"><i class="fas fa-arrow-up"></i> Withdrawals</a>
+      <a href="admin-investments.html"><i class="fas fa-rocket"></i> Investments</a>
+      <a href="admin-referrals.html"><i class="fas fa-share-nodes"></i> Referrals</a>
+      <a href="admin-transactions.html" class="active"><i class="fas fa-clock-rotate-left"></i> Transactions</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sideAvatar">A</div>
+      <div class="sidebar-user-info">
+        <div class="uname" id="sideName">Admin</div>
+        <div class="urole">Administrator</div>
+      </div>
+      <button class="sidebar-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="page-header">
+      <h1><i class="fas fa-clock-rotate-left"></i> Transaction Logs</h1>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-row">
+      <div class="summary-card">
+        <div class="sv white" id="sumTotal">0</div>
+        <div class="sl">Total</div>
+      </div>
+      <div class="summary-card">
+        <div class="sv green" id="sumDeposits">0</div>
+        <div class="sl">Deposits</div>
+      </div>
+      <div class="summary-card">
+        <div class="sv amber" id="sumWithdrawals">0</div>
+        <div class="sl">Withdrawals</div>
+      </div>
+      <div class="summary-card">
+        <div class="sv blue" id="sumROI">0</div>
+        <div class="sl">ROI Credits</div>
+      </div>
+      <div class="summary-card">
+        <div class="sv purple" id="sumReferrals">0</div>
+        <div class="sl">Referrals</div>
+      </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs">
+      <button class="filter-tab active" data-filter="all" onclick="filterTx('all')">All</button>
+      <button class="filter-tab" data-filter="deposit" onclick="filterTx('deposit')">Deposits</button>
+      <button class="filter-tab" data-filter="withdrawal" onclick="filterTx('withdrawal')">Withdrawals</button>
+      <button class="filter-tab" data-filter="roi" onclick="filterTx('roi')">ROI</button>
+      <button class="filter-tab" data-filter="referral" onclick="filterTx('referral')">Referrals</button>
+      <button class="filter-tab" data-filter="bonus" onclick="filterTx('bonus')">Bonuses</button>
+      <button class="filter-tab" data-filter="adjustment" onclick="filterTx('adjustment')">Wallet Adj.</button>
+    </div>
+
+    <!-- Search -->
+    <div class="search-wrap">
+      <i class="fas fa-search"></i>
+      <input type="text" id="searchInput" placeholder="Search by user name or username..." oninput="renderPage()">
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tx ID</th>
+              <th>User</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Date & Time</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="7"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading transactions...</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" id="pagination"></div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYw02OLQ-AOun_0YLzTd7DaCLsHQqHxGk",
+      authDomain: "finexo-3afc7.firebaseapp.com",
+      projectId: "finexo-3afc7",
+      storageBucket: "finexo-3afc7.firebasestorage.app",
+      messagingSenderId: "443358513817",
+      appId: "1:443358513817:web:756f9aa5e02dc05ca84608"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const fm = (v) => "₦" + Number(v || 0).toLocaleString();
+    let allTransactions = [];
+    let currentFilter = 'all';
+    let currentPage = 1;
+    const perPage = 25;
+
+    function showToast(title, message, type = 'success') {
+      const existing = document.querySelector('.admin-toast');
+      if (existing) existing.remove();
+      const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+      const toast = document.createElement('div');
+      toast.className = `admin-toast ${type}`;
+      toast.innerHTML = `<div class="toast-icon-bx ${type}"><i class="fas ${icons[type]}"></i></div><div class="toast-txt"><h4>${title}</h4><p>${message}</p></div>`;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.style.opacity = '0'; toast.style.transform = 'translateY(20px)';
+          toast.style.transition = 'all 0.3s';
+          setTimeout(() => toast.remove(), 300);
+        }
+      }, 4000);
+    }
+
+    function fmtDateTime(ts) {
+      if (!ts) return '—';
+      try {
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) +
+               ', ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      } catch(e) { return '—'; }
+    }
+
+    // Determine category from transaction type
+    function getCategory(tx) {
+      const type = (tx.type || '').toLowerCase();
+      if (type.includes('deposit')) return 'deposit';
+      if (type.includes('withdraw')) return 'withdrawal';
+      if (type.includes('roi') || type.includes('daily')) return 'roi';
+      if (type.includes('referral')) return 'referral';
+      if (type.includes('welcome') || type.includes('bonus')) return 'bonus';
+      if (type.includes('wallet_credit') || type.includes('wallet_debit')) return 'adjustment';
+      if (type.includes('invest')) return 'investment';
+      return 'other';
+    }
+
+    // Get badge class
+    function getBadgeClass(cat) {
+      const map = { deposit: 'deposit', withdrawal: 'withdrawal', roi: 'roi', referral: 'referral', bonus: 'bonus', investment: 'investment', adjustment: 'credit' };
+      return map[cat] || 'bonus';
+    }
+
+    // Get icon
+    function getIcon(cat) {
+      const map = { deposit: 'fa-arrow-down', withdrawal: 'fa-arrow-up', roi: 'fa-chart-line', referral: 'fa-gift', bonus: 'fa-star', investment: 'fa-rocket', adjustment: 'fa-wallet' };
+      return map[cat] || 'fa-circle';
+    }
+
+    document.getElementById('menuToggle').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.toggle('open');
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await signOut(auth);
+      showToast('Logged Out', 'Redirecting...', 'success');
+      setTimeout(() => window.location.href = 'admin-login.html', 1200);
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'admin-login.html'; return; }
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
+          await signOut(auth);
+          window.location.href = 'admin-login.html';
+          return;
+        }
+        document.getElementById('sideName').textContent = userDoc.data().fullName || 'Admin';
+        document.getElementById('sideAvatar').textContent = (userDoc.data().fullName || 'A').charAt(0).toUpperCase();
+        await loadAllTransactions();
+      } catch(e) { window.location.href = 'admin-login.html'; }
+    });
+
+    async function loadAllTransactions() {
+      allTransactions = [];
+      const userMap = {};
+
+      try {
+        const usersSnap = await getDocs(collection(db, 'users'));
+        usersSnap.forEach(d => {
+          userMap[d.id] = { id: d.id, ...d.data() };
+        });
+
+        for (const userId of Object.keys(userMap)) {
+          try {
+            const txSnap = await getDocs(collection(db, `users/${userId}/transactions`));
+            txSnap.forEach(d => {
+              const tx = d.data();
+              allTransactions.push({
+                id: d.id,
+                userId: userId,
+                userName: userMap[userId]?.fullName || 'User',
+                userUsername: userMap[userId]?.username || 'user',
+                type: tx.type || 'transaction',
+                amount: tx.amount || 0,
+                status: tx.status || 'completed',
+                description: tx.description || '',
+                category: getCategory(tx),
+                createdAt: tx.createdAt
+              });
+            });
+          } catch(e) {}
+        }
+
+        allTransactions.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+
+        // Summary
+        const deposits = allTransactions.filter(t => t.category === 'deposit');
+        const withdrawals = allTransactions.filter(t => t.category === 'withdrawal');
+        const roi = allTransactions.filter(t => t.category === 'roi');
+        const referrals = allTransactions.filter(t => t.category === 'referral');
+
+        document.getElementById('sumTotal').textContent = allTransactions.length;
+        document.getElementById('sumDeposits').textContent = deposits.length;
+        document.getElementById('sumWithdrawals').textContent = withdrawals.length;
+        document.getElementById('sumROI').textContent = roi.length;
+        document.getElementById('sumReferrals').textContent = referrals.length;
+
+        currentPage = 1;
+        renderPage();
+      } catch(e) { console.error('Load error:', e); }
+    }
+
+    window.filterTx = function(filter) {
+      currentFilter = filter;
+      currentPage = 1;
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`.filter-tab[data-filter="${filter}"]`).classList.add('active');
+      renderPage();
+    };
+
+    window.renderPage = function() {
+      const search = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+      let filtered = allTransactions;
+
+      if (currentFilter !== 'all') {
+        filtered = filtered.filter(t => t.category === currentFilter);
+      }
+
+      if (search) {
+        filtered = filtered.filter(t =>
+          (t.userName || '').toLowerCase().includes(search) ||
+          (t.userUsername || '').toLowerCase().includes(search)
+        );
+      }
+
+      const totalPages = Math.ceil(filtered.length / perPage);
+      if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+
+      const start = (currentPage - 1) * perPage;
+      const pageData = filtered.slice(start, start + perPage);
+
+      const tbody = document.getElementById('tableBody');
+      if (!pageData.length) {
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fas fa-inbox"></i><p>No transactions found</p></div></td></tr>`;
+        document.getElementById('pagination').innerHTML = '';
+        return;
+      }
+
+      tbody.innerHTML = pageData.map(t => {
+        const badgeClass = getBadgeClass(t.category);
+        const icon = getIcon(t.category);
+        const typeLabel = (t.type || 'transaction').replace(/_/g, ' ');
+        const statusClass = t.status === 'completed' ? 'completed' : t.status === 'pending' ? 'pending' : 'failed';
+
+        return `
+          <tr>
+            <td style="font-family:monospace;font-size:0.65rem;">${t.id?.substring(0,10)}...</td>
+            <td>
+              <div style="font-weight:600;font-size:0.75rem;">${t.userName}</div>
+              <div style="font-size:0.62rem;color:#fb923c;">@${t.userUsername}</div>
+            </td>
+            <td><span class="type-badge ${badgeClass}"><i class="fas ${icon}"></i> ${typeLabel}</span></td>
+            <td style="font-weight:700;font-family:'Space Grotesk',monospace;">${fm(t.amount)}</td>
+            <td><span class="status-dot ${statusClass}"></span>${t.status || 'Completed'}</td>
+            <td style="font-size:0.68rem;color:var(--text3);">${fmtDateTime(t.createdAt)}</td>
+            <td style="font-size:0.68rem;color:var(--text2);max-width:200px;overflow:hidden;text-overflow:ellipsis;">${t.description || '—'}</td>
+          </tr>
+        `;
+      }).join('');
+
+      // Pagination
+      let pagHTML = '';
+      pagHTML += `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
+      for (let i = 1; i <= totalPages; i++) {
+        if (totalPages <= 10 || i === 1 || i === totalPages || Math.abs(i - currentPage) <= 2) {
+          pagHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+        } else if (i === 2 || i === totalPages - 1) {
+          pagHTML += `<span style="color:var(--text3);padding:0 0.2rem;">...</span>`;
+        }
+      }
+      pagHTML += `<button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
+      document.getElementById('pagination').innerHTML = pagHTML;
+    };
+
+    window.goToPage = function(page) {
+      const filtered = allTransactions.filter(t => currentFilter === 'all' || t.category === currentFilter);
+      const totalPages = Math.ceil(filtered.length / perPage);
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      renderPage();
+    };
+
+    console.log('🛡️ Transaction Logs Ready');
+  </script>
+</body>
+</html>
