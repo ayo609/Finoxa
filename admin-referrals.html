@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Finoxa Admin • Referrals Management</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root {
+      --bg: #0a0a0a; --surface: #141414; --surface2: #1a1a1a;
+      --admin: #dc2626; --admin-light: #ef4444;
+      --orange: #f97316; --amber: #f59e0b; --green: #22c55e;
+      --text: #ffffff; --text2: #a0a0a0; --text3: #666666;
+      --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.04);
+      --l1: #fb923c; --l2: #fbbf24; --l3: #f472b6;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; overflow-x: hidden;
+    }
+
+    /* ============ TOAST ============ */
+    .admin-toast {
+      position: fixed; bottom: 25px; right: 25px; z-index: 10000;
+      background: rgba(18,18,18,0.95); backdrop-filter: blur(30px);
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;
+      padding: 0.9rem 1.2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      display: flex; align-items: center; gap: 0.8rem;
+      animation: toastIn 0.4s ease; min-width: 300px; max-width: 420px;
+    }
+    .admin-toast.success { border-bottom: 3px solid #22c55e; }
+    .admin-toast.error { border-bottom: 3px solid #ef4444; }
+    .admin-toast.warning { border-bottom: 3px solid #f59e0b; }
+    .admin-toast.info { border-bottom: 3px solid #60a5fa; }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .toast-icon-bx {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; flex-shrink: 0;
+    }
+    .toast-icon-bx.success { background: rgba(34,197,94,0.12); color: #4ade80; }
+    .toast-icon-bx.error { background: rgba(239,68,68,0.12); color: #f87171; }
+    .toast-icon-bx.warning { background: rgba(245,158,11,0.12); color: #fbbf24; }
+    .toast-icon-bx.info { background: rgba(96,165,250,0.12); color: #60a5fa; }
+    .toast-txt h4 { font-size: 0.8rem; font-weight: 700; color: #fff; margin-bottom: 0.1rem; }
+    .toast-txt p { font-size: 0.7rem; color: rgba(255,255,255,0.5); }
+
+    /* ============ SIDEBAR ============ */
+    .sidebar {
+      width: 250px; height: 100vh; background: var(--surface);
+      border-right: 1px solid var(--border); padding: 1.5rem;
+      display: flex; flex-direction: column; position: fixed;
+      left: 0; top: 0; z-index: 100; transition: transform 0.3s;
+    }
+    .sidebar-brand {
+      display: flex; align-items: center; gap: 0.7rem;
+      margin-bottom: 2rem; padding-bottom: 1.2rem; border-bottom: 1px solid var(--border);
+    }
+    .sidebar-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(249,115,22,0.15));
+      border: 2px solid rgba(239,68,68,0.3); border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; font-size: 1rem;
+    }
+    .sidebar-brand h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1rem; font-weight: 700;
+      background: linear-gradient(135deg, #f87171, #fb923c, #fbbf24);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .admin-tag { font-size: 0.6rem; color: #f87171; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+
+    .sidebar-nav { display: flex; flex-direction: column; gap: 0.2rem; flex: 1; }
+    .sidebar-nav a {
+      display: flex; align-items: center; gap: 0.7rem;
+      padding: 0.65rem 0.85rem; border-radius: 10px;
+      color: var(--text2); text-decoration: none;
+      font-weight: 500; font-size: 0.83rem; transition: all 0.3s;
+    }
+    .sidebar-nav a:hover, .sidebar-nav a.active {
+      background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(249,115,22,0.08));
+      color: #fff;
+    }
+    .sidebar-nav a i { width: 18px; text-align: center; }
+
+    .sidebar-user {
+      margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .sidebar-avatar {
+      width: 36px; height: 36px; background: linear-gradient(135deg, #dc2626, #ef4444);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.8rem;
+    }
+    .sidebar-user-info { flex: 1; min-width: 0; }
+    .sidebar-user-info .uname { font-weight: 600; font-size: 0.78rem; }
+    .sidebar-user-info .urole { color: #f87171; font-size: 0.62rem; }
+    .sidebar-logout {
+      background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 8px; color: #f87171; cursor: pointer;
+      font-size: 0.8rem; padding: 0.35rem 0.55rem; transition: all 0.3s;
+    }
+    .sidebar-logout:hover { background: rgba(239,68,68,0.2); }
+
+    /* ============ MAIN CONTENT ============ */
+    .main-content {
+      flex: 1; margin-left: 250px; padding: 1.5rem 2rem; min-height: 100vh;
+    }
+
+    .menu-toggle {
+      display: none; position: fixed; top: 1rem; left: 1rem; z-index: 200;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; width: 40px; height: 40px;
+      align-items: center; justify-content: center;
+      color: #fff; font-size: 1.1rem; cursor: pointer;
+    }
+
+    .page-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+    }
+    .page-header h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem; font-weight: 700;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .page-header h1 i { color: #f87171; }
+
+    /* Summary */
+    .summary-row {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 0.8rem; margin-bottom: 1.5rem;
+    }
+    .summary-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1rem; text-align: center;
+    }
+    .summary-card .sv {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.4rem; font-weight: 700;
+    }
+    .summary-card .sv.l1 { color: var(--l1); }
+    .summary-card .sv.l2 { color: var(--l2); }
+    .summary-card .sv.l3 { color: var(--l3); }
+    .summary-card .sv.green { color: #4ade80; }
+    .summary-card .sv.white { color: #fff; }
+    .summary-card .sl {
+      font-size: 0.62rem; color: var(--text3);
+      text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.2rem;
+    }
+
+    /* Filter Tabs */
+    .filter-tabs {
+      display: flex; gap: 0.3rem; margin-bottom: 1.2rem; flex-wrap: wrap;
+    }
+    .filter-tab {
+      padding: 0.5rem 1rem; border-radius: 20px;
+      font-size: 0.73rem; font-weight: 600; cursor: pointer;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--text2); transition: all 0.3s;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .filter-tab.active { background: var(--admin); color: #fff; border-color: var(--admin); }
+    .filter-tab .ft-count {
+      font-size: 0.65rem; padding: 0.1rem 0.4rem;
+      border-radius: 10px; margin-left: 0.3rem;
+    }
+    .filter-tab.active .ft-count { background: rgba(255,255,255,0.2); }
+
+    /* Search */
+    .search-wrap {
+      position: relative; margin-bottom: 1rem; max-width: 400px;
+    }
+    .search-wrap input {
+      width: 100%; padding: 0.65rem 1rem 0.65rem 2.4rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; color: #fff; font-size: 0.82rem;
+      font-family: 'Plus Jakarta Sans', sans-serif; outline: none;
+    }
+    .search-wrap i {
+      position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%);
+      color: var(--text3); font-size: 0.75rem;
+    }
+
+    /* Table */
+    .table-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden; margin-bottom: 1rem;
+    }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+    th {
+      text-align: left; padding: 0.7rem 0.7rem;
+      color: var(--text3); font-weight: 600; font-size: 0.62rem;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 0.6rem 0.7rem; border-bottom: 1px solid var(--border2);
+      white-space: nowrap;
+    }
+    tr:hover td { background: rgba(255,255,255,0.01); }
+
+    .level-badge {
+      padding: 0.15rem 0.5rem; border-radius: 10px;
+      font-size: 0.6rem; font-weight: 700;
+    }
+    .level-badge.l1 { background: rgba(251,146,60,0.12); color: var(--l1); }
+    .level-badge.l2 { background: rgba(251,191,36,0.12); color: var(--l2); }
+    .level-badge.l3 { background: rgba(244,114,182,0.12); color: var(--l3); }
+
+    .empty-state { text-align: center; padding: 3rem; color: var(--text3); }
+    .empty-state i { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.3; }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .summary-row { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; padding: 1rem; }
+      .menu-toggle { display: flex; }
+      .page-header h1 { font-size: 1.2rem; }
+      .summary-row { grid-template-columns: 1fr 1fr; }
+      .admin-toast { left: 1rem; right: 1rem; min-width: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">🛡️</div>
+      <div><h2>Finoxa</h2><div class="admin-tag">Admin Panel</div></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="admin-index.html"><i class="fas fa-grid-2"></i> Dashboard</a>
+      <a href="admin-users.html"><i class="fas fa-users"></i> Users</a>
+      <a href="admin-deposits.html"><i class="fas fa-arrow-down"></i> Deposits</a>
+      <a href="admin-withdrawals.html"><i class="fas fa-arrow-up"></i> Withdrawals</a>
+      <a href="admin-investments.html"><i class="fas fa-rocket"></i> Investments</a>
+      <a href="admin-referrals.html" class="active"><i class="fas fa-share-nodes"></i> Referrals</a>
+      <a href="admin-transactions.html"><i class="fas fa-clock-rotate-left"></i> Transactions</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sideAvatar">A</div>
+      <div class="sidebar-user-info">
+        <div class="uname" id="sideName">Admin</div>
+        <div class="urole">Administrator</div>
+      </div>
+      <button class="sidebar-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="page-header">
+      <h1><i class="fas fa-share-nodes"></i> Referrals Management</h1>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-row">
+      <div class="summary-card">
+        <div class="sv white" id="sumTotal">0</div>
+        <div class="sl">Total Referrals</div>
+      </div>
+      <div class="summary-card">
+        <div class="sv l1" id="sumL1">0</div>
+        <div class="sl">Level 1 (20%)</div>
+      </div>
+      <div class="summary-card">
+        <div class="sv l2" id="sumL2">0</div>
+        <div class="sl">Level 2 (3%)</div>
+      </div>
+      <div class="summary-card">
+        <div class="sv l3" id="sumL3">0</div>
+        <div class="sl">Level 3 (1%)</div>
+      </div>
+      <div class="summary-card">
+        <div class="sv green" id="sumEarnings">₦0</div>
+        <div class="sl">Total Commissions</div>
+      </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs">
+      <button class="filter-tab active" data-filter="all" onclick="filterRefs('all')">All Levels<span class="ft-count" id="countAll">0</span></button>
+      <button class="filter-tab" data-filter="1" onclick="filterRefs('1')">Level 1 (20%)<span class="ft-count" id="countL1">0</span></button>
+      <button class="filter-tab" data-filter="2" onclick="filterRefs('2')">Level 2 (3%)<span class="ft-count" id="countL2">0</span></button>
+      <button class="filter-tab" data-filter="3" onclick="filterRefs('3')">Level 3 (1%)<span class="ft-count" id="countL3">0</span></button>
+    </div>
+
+    <!-- Search -->
+    <div class="search-wrap">
+      <i class="fas fa-search"></i>
+      <input type="text" id="searchInput" placeholder="Search by upliner or downline name..." oninput="renderTable()">
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Upliner</th>
+              <th>Downline</th>
+              <th>Level</th>
+              <th>Commission</th>
+              <th>Plan Purchased</th>
+              <th>Investment</th>
+              <th>Commission Earned</th>
+              <th>Date Referred</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="8"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading referrals...</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYw02OLQ-AOun_0YLzTd7DaCLsHQqHxGk",
+      authDomain: "finexo-3afc7.firebaseapp.com",
+      projectId: "finexo-3afc7",
+      storageBucket: "finexo-3afc7.firebasestorage.app",
+      messagingSenderId: "443358513817",
+      appId: "1:443358513817:web:756f9aa5e02dc05ca84608"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const fm = (v) => "₦" + Number(v || 0).toLocaleString();
+    let allReferrals = [];
+    let currentFilter = 'all';
+
+    function showToast(title, message, type = 'success') {
+      const existing = document.querySelector('.admin-toast');
+      if (existing) existing.remove();
+      const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+      const toast = document.createElement('div');
+      toast.className = `admin-toast ${type}`;
+      toast.innerHTML = `<div class="toast-icon-bx ${type}"><i class="fas ${icons[type]}"></i></div><div class="toast-txt"><h4>${title}</h4><p>${message}</p></div>`;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.style.opacity = '0'; toast.style.transform = 'translateY(20px)';
+          toast.style.transition = 'all 0.3s';
+          setTimeout(() => toast.remove(), 300);
+        }
+      }, 4000);
+    }
+
+    function fmtDate(ts) {
+      if (!ts) return '—';
+      try {
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      } catch(e) { return '—'; }
+    }
+
+    document.getElementById('menuToggle').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.toggle('open');
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await signOut(auth);
+      showToast('Logged Out', 'Redirecting...', 'success');
+      setTimeout(() => window.location.href = 'admin-login.html', 1200);
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'admin-login.html'; return; }
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
+          await signOut(auth);
+          window.location.href = 'admin-login.html';
+          return;
+        }
+        document.getElementById('sideName').textContent = userDoc.data().fullName || 'Admin';
+        document.getElementById('sideAvatar').textContent = (userDoc.data().fullName || 'A').charAt(0).toUpperCase();
+        await loadAllReferrals();
+      } catch(e) { window.location.href = 'admin-login.html'; }
+    });
+
+    async function loadAllReferrals() {
+      allReferrals = [];
+      const userMap = {};
+
+      try {
+        // Build user map first
+        const usersSnap = await getDocs(collection(db, 'users'));
+        usersSnap.forEach(d => {
+          userMap[d.id] = { id: d.id, ...d.data() };
+        });
+
+        // Get referrals from each user
+        for (const userId of Object.keys(userMap)) {
+          try {
+            const refSnap = await getDocs(collection(db, `users/${userId}/referrals`));
+            refSnap.forEach(d => {
+              const refData = d.data();
+              const downlineUser = userMap[refData.referredUserId];
+              
+              // Get downline's active plans
+              let planName = 'No plan yet';
+              let investmentAmount = 0;
+
+              if (downlineUser) {
+                // Check active plans of downline
+                allReferrals.push({
+                  id: d.id,
+                  uplinerId: userId,
+                  uplinerName: userMap[userId]?.fullName || 'Unknown',
+                  uplinerUsername: userMap[userId]?.username || 'user',
+                  downlineId: refData.referredUserId,
+                  downlineName: downlineUser.fullName || 'Unknown',
+                  downlineUsername: downlineUser.username || 'user',
+                  level: refData.level || 1,
+                  commissionRate: refData.commission || (refData.level === 1 ? 20 : refData.level === 2 ? 3 : 1),
+                  planName: planName,
+                  investmentAmount: investmentAmount,
+                  totalEarned: refData.totalEarned || 0,
+                  lastInvestment: refData.lastInvestment || 0,
+                  referredAt: refData.referredAt || refData.createdAt || new Date()
+                });
+              }
+            });
+          } catch(e) {}
+        }
+
+        // Now enrich with plan data
+        for (const ref of allReferrals) {
+          try {
+            const plansSnap = await getDocs(collection(db, `users/${ref.downlineId}/activePlans`));
+            const plans = [];
+            plansSnap.forEach(p => plans.push(p.data()));
+            
+            if (plans.length > 0) {
+              const latestPlan = plans.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0))[0];
+              ref.planName = latestPlan.planName || 'Plan';
+              ref.investmentAmount = latestPlan.capital || 0;
+            }
+          } catch(e) {}
+        }
+
+        allReferrals.sort((a, b) => (b.referredAt?.toMillis?.() || 0) - (a.referredAt?.toMillis?.() || 0));
+
+        // Summary
+        const l1 = allReferrals.filter(r => r.level === 1);
+        const l2 = allReferrals.filter(r => r.level === 2);
+        const l3 = allReferrals.filter(r => r.level === 3);
+        const totalEarnings = allReferrals.reduce((s, r) => s + (r.totalEarned || 0), 0);
+
+        document.getElementById('sumTotal').textContent = allReferrals.length;
+        document.getElementById('sumL1').textContent = l1.length;
+        document.getElementById('sumL2').textContent = l2.length;
+        document.getElementById('sumL3').textContent = l3.length;
+        document.getElementById('sumEarnings').textContent = fm(totalEarnings);
+        document.getElementById('countAll').textContent = allReferrals.length;
+        document.getElementById('countL1').textContent = l1.length;
+        document.getElementById('countL2').textContent = l2.length;
+        document.getElementById('countL3').textContent = l3.length;
+
+        renderTable();
+      } catch(e) { console.error('Load error:', e); }
+    }
+
+    window.filterRefs = function(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`.filter-tab[data-filter="${filter}"]`).classList.add('active');
+      renderTable();
+    };
+
+    window.renderTable = function() {
+      const search = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+      let filtered = allReferrals;
+
+      if (currentFilter !== 'all') {
+        filtered = filtered.filter(r => r.level === Number(currentFilter));
+      }
+
+      if (search) {
+        filtered = filtered.filter(r =>
+          (r.uplinerName || '').toLowerCase().includes(search) ||
+          (r.uplinerUsername || '').toLowerCase().includes(search) ||
+          (r.downlineName || '').toLowerCase().includes(search) ||
+          (r.downlineUsername || '').toLowerCase().includes(search)
+        );
+      }
+
+      const tbody = document.getElementById('tableBody');
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fas fa-users-slash"></i><p>No referrals found</p></div></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(r => {
+        const lvlClass = 'l' + r.level;
+        const rateLabel = r.level === 1 ? '20%' : r.level === 2 ? '3%' : '1%';
+
+        return `
+          <tr>
+            <td>
+              <div style="font-weight:600;font-size:0.78rem;">${r.uplinerName}</div>
+              <div style="font-size:0.65rem;color:#fb923c;">@${r.uplinerUsername}</div>
+            </td>
+            <td>
+              <div style="font-weight:600;font-size:0.78rem;">${r.downlineName}</div>
+              <div style="font-size:0.65rem;color:#fb923c;">@${r.downlineUsername}</div>
+            </td>
+            <td><span class="level-badge ${lvlClass}">Level ${r.level}</span></td>
+            <td style="font-weight:700;">${rateLabel}</td>
+            <td style="font-size:0.75rem;">${r.planName || '—'}</td>
+            <td style="font-weight:600;">${r.investmentAmount > 0 ? fm(r.investmentAmount) : '—'}</td>
+            <td style="color:#4ade80;font-weight:700;">${r.totalEarned > 0 ? fm(r.totalEarned) : '₦0'}</td>
+            <td style="font-size:0.7rem;color:var(--text3);">${fmtDate(r.referredAt)}</td>
+          </tr>
+        `;
+      }).join('');
+    };
+
+    console.log('🛡️ Referrals Management Ready');
+  </script>
+</body>
+</html>
