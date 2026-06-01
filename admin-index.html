@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Finoxa • Admin Dashboard</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --surface2: #1a1a1a;
+      --admin: #dc2626;
+      --admin-light: #ef4444;
+      --orange: #f97316;
+      --amber: #f59e0b;
+      --green: #22c55e;
+      --text: #ffffff;
+      --text2: #a0a0a0;
+      --text3: #666666;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.04);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+    }
+
+    /* ============ TOAST ============ */
+    .admin-toast {
+      position: fixed; bottom: 25px; right: 25px; z-index: 10000;
+      background: rgba(18,18,18,0.95); backdrop-filter: blur(30px);
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;
+      padding: 0.9rem 1.2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      display: flex; align-items: center; gap: 0.8rem;
+      animation: toastIn 0.4s ease; min-width: 300px; max-width: 420px;
+    }
+    .admin-toast.success { border-bottom: 3px solid #22c55e; }
+    .admin-toast.error { border-bottom: 3px solid #ef4444; }
+    .admin-toast.warning { border-bottom: 3px solid #f59e0b; }
+    .admin-toast.info { border-bottom: 3px solid #60a5fa; }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .toast-icon-bx {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; flex-shrink: 0;
+    }
+    .toast-icon-bx.success { background: rgba(34,197,94,0.12); color: #4ade80; }
+    .toast-icon-bx.error { background: rgba(239,68,68,0.12); color: #f87171; }
+    .toast-icon-bx.warning { background: rgba(245,158,11,0.12); color: #fbbf24; }
+    .toast-icon-bx.info { background: rgba(96,165,250,0.12); color: #60a5fa; }
+    .toast-txt h4 { font-size: 0.8rem; font-weight: 700; color: #fff; margin-bottom: 0.1rem; }
+    .toast-txt p { font-size: 0.7rem; color: rgba(255,255,255,0.5); }
+
+    /* ============ CONFIRM BAR ============ */
+    .confirm-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      background: var(--surface2); border-bottom: 1px solid var(--border);
+      padding: 0.8rem 1.5rem; display: none;
+      align-items: center; justify-content: center; gap: 1rem;
+      animation: slideDown 0.3s ease;
+    }
+    .confirm-bar.show { display: flex; }
+    @keyframes slideDown {
+      from { transform: translateY(-100%); }
+      to { transform: translateY(0); }
+    }
+    .confirm-bar p { font-size: 0.85rem; color: var(--text2); }
+    .confirm-bar .cb-btns { display: flex; gap: 0.5rem; }
+    .confirm-bar button {
+      padding: 0.4rem 1rem; border-radius: 8px; font-weight: 600;
+      font-size: 0.75rem; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+      border: none; transition: all 0.3s;
+    }
+    .cb-confirm { background: var(--admin); color: #fff; }
+    .cb-cancel { background: rgba(255,255,255,0.05); color: var(--text2); border: 1px solid var(--border); }
+
+    /* ============ SIDEBAR ============ */
+    .sidebar {
+      width: 250px; height: 100vh; background: var(--surface);
+      border-right: 1px solid var(--border); padding: 1.5rem;
+      display: flex; flex-direction: column; position: fixed;
+      left: 0; top: 0; z-index: 100; transition: transform 0.3s;
+    }
+    .sidebar-brand {
+      display: flex; align-items: center; gap: 0.7rem;
+      margin-bottom: 2rem; padding-bottom: 1.2rem; border-bottom: 1px solid var(--border);
+    }
+    .sidebar-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(249,115,22,0.15));
+      border: 2px solid rgba(239,68,68,0.3); border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; font-size: 1rem;
+    }
+    .sidebar-brand h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1rem; font-weight: 700;
+      background: linear-gradient(135deg, #f87171, #fb923c, #fbbf24);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .admin-tag { font-size: 0.6rem; color: #f87171; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+
+    .sidebar-nav { display: flex; flex-direction: column; gap: 0.2rem; flex: 1; }
+    .sidebar-nav a {
+      display: flex; align-items: center; gap: 0.7rem;
+      padding: 0.65rem 0.85rem; border-radius: 10px;
+      color: var(--text2); text-decoration: none;
+      font-weight: 500; font-size: 0.83rem; transition: all 0.3s;
+    }
+    .sidebar-nav a:hover, .sidebar-nav a.active {
+      background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(249,115,22,0.08));
+      color: #fff;
+    }
+    .sidebar-nav a i { width: 18px; text-align: center; }
+    .sidebar-nav a .count-badge {
+      margin-left: auto; background: var(--admin); color: #fff;
+      font-size: 0.6rem; padding: 0.12rem 0.45rem; border-radius: 20px; font-weight: 700;
+    }
+    .sidebar-nav a .count-badge.amber { background: var(--amber); color: #000; }
+
+    .sidebar-user {
+      margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .sidebar-avatar {
+      width: 36px; height: 36px; background: linear-gradient(135deg, #dc2626, #ef4444);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.8rem;
+    }
+    .sidebar-user-info { flex: 1; min-width: 0; }
+    .sidebar-user-info .uname { font-weight: 600; font-size: 0.78rem; }
+    .sidebar-user-info .urole { color: #f87171; font-size: 0.62rem; }
+    .sidebar-logout {
+      background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 8px; color: #f87171; cursor: pointer;
+      font-size: 0.8rem; padding: 0.35rem 0.55rem; transition: all 0.3s;
+    }
+    .sidebar-logout:hover { background: rgba(239,68,68,0.2); }
+
+    /* ============ MAIN CONTENT ============ */
+    .main-content {
+      flex: 1; margin-left: 250px; padding: 1.5rem 2rem 3rem; min-height: 100vh;
+    }
+
+    .menu-toggle {
+      display: none; position: fixed; top: 1rem; left: 1rem; z-index: 200;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; width: 40px; height: 40px;
+      align-items: center; justify-content: center;
+      color: #fff; font-size: 1.1rem; cursor: pointer;
+    }
+
+    .page-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+    }
+    .page-header h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem; font-weight: 700;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .page-header h1 i { color: #f87171; }
+    .header-date {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 50px; padding: 0.5rem 1.2rem;
+      color: var(--text2); font-size: 0.78rem;
+    }
+
+    /* Stats */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 0.8rem; margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.2rem; transition: all 0.3s; cursor: pointer;
+    }
+    .stat-card:hover { border-color: rgba(239,68,68,0.25); }
+    .sc-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; font-size: 0.95rem; margin-bottom: 0.5rem;
+    }
+    .sc-icon.red { background: rgba(239,68,68,0.1); color: #f87171; }
+    .sc-icon.green { background: rgba(34,197,94,0.1); color: #4ade80; }
+    .sc-icon.amber { background: rgba(245,158,11,0.1); color: #fbbf24; }
+    .sc-icon.purple { background: rgba(168,85,247,0.1); color: #a78bfa; }
+    .sc-icon.blue { background: rgba(59,130,246,0.1); color: #60a5fa; }
+    .sc-icon.orange { background: rgba(249,115,22,0.1); color: #fb923c; }
+    .sc-icon.rose { background: rgba(244,114,182,0.1); color: #f472b6; }
+    .sc-icon.teal { background: rgba(20,184,166,0.1); color: #2dd4bf; }
+    .sc-badge {
+      font-size: 0.6rem; padding: 0.2rem 0.5rem;
+      border-radius: 12px; font-weight: 700; display: inline-block;
+    }
+    .sc-badge.amber { background: rgba(245,158,11,0.1); color: #fbbf24; }
+    .sc-badge.red { background: rgba(239,68,68,0.1); color: #f87171; }
+    .stat-card .sc-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.7rem; font-weight: 700; line-height: 1;
+    }
+    .stat-card .sc-label {
+      font-size: 0.65rem; color: var(--text3);
+      text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.2rem;
+    }
+
+    /* Quick Actions */
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem; font-weight: 700;
+      margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .section-title i { color: #f87171; }
+    .quick-actions {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 0.7rem; margin-bottom: 1.5rem;
+    }
+    .qa-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1rem; text-decoration: none;
+      color: #fff; transition: all 0.3s;
+      display: flex; align-items: center; gap: 0.7rem;
+    }
+    .qa-card:hover { border-color: rgba(239,68,68,0.25); background: var(--surface2); }
+    .qa-card .qa-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; flex-shrink: 0;
+    }
+    .qa-icon.r { background: rgba(239,68,68,0.1); color: #f87171; }
+    .qa-icon.g { background: rgba(34,197,94,0.1); color: #4ade80; }
+    .qa-icon.a { background: rgba(245,158,11,0.1); color: #fbbf24; }
+    .qa-icon.b { background: rgba(59,130,246,0.1); color: #60a5fa; }
+    .qa-info .qa-label { font-weight: 600; font-size: 0.8rem; }
+    .qa-info .qa-sub { font-size: 0.65rem; color: var(--text3); }
+
+    /* ============ RESET SECTION ============ */
+    .reset-section {
+      background: var(--surface); border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 18px; padding: 1.5rem; margin-top: 1.5rem;
+    }
+    .reset-section h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem; font-weight: 700;
+      margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem;
+      color: #f87171;
+    }
+    .reset-section .reset-sub {
+      font-size: 0.73rem; color: var(--text3); margin-bottom: 1rem;
+    }
+    .reset-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem;
+    }
+    .reset-card {
+      background: rgba(239,68,68,0.04); border: 1px solid rgba(239,68,68,0.15);
+      border-radius: 14px; padding: 1rem; text-align: center;
+      transition: all 0.3s;
+    }
+    .reset-card:hover { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); }
+    .reset-card .rc-icon {
+      font-size: 1.5rem; margin-bottom: 0.4rem;
+    }
+    .reset-card .rc-name {
+      font-weight: 700; font-size: 0.78rem; margin-bottom: 0.5rem;
+    }
+    .reset-card .rc-btn {
+      padding: 0.4rem 1rem; border-radius: 8px;
+      font-size: 0.68rem; font-weight: 700; cursor: pointer;
+      border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.1);
+      color: #f87171; transition: all 0.3s;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .reset-card .rc-btn:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
+
+    .reset-all-card {
+      grid-column: 1 / -1;
+      background: rgba(239,68,68,0.06); border: 2px solid rgba(239,68,68,0.3);
+    }
+    .reset-all-card .rc-btn {
+      background: #dc2626; color: #fff; border-color: #dc2626;
+      padding: 0.5rem 2rem; font-size: 0.75rem;
+    }
+    .reset-all-card .rc-btn:hover { background: #b91c1c; }
+
+    /* Recent Section */
+    .two-col {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;
+    }
+    .data-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.2rem;
+    }
+    .data-card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.9rem; font-weight: 700;
+      margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.4rem;
+    }
+    .data-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.5rem 0; border-bottom: 1px solid var(--border2); font-size: 0.78rem;
+    }
+    .data-row:last-child { border: none; }
+    .dr-left { display: flex; align-items: center; gap: 0.5rem; }
+    .dr-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .dr-dot.green { background: #4ade80; }
+    .dr-dot.amber { background: #fbbf24; }
+    .dr-dot.red { background: #f87171; }
+    .dr-dot.blue { background: #60a5fa; }
+    .dr-amount { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.78rem; }
+    .dr-amount.green { color: #4ade80; }
+    .dr-amount.amber { color: #fbbf24; }
+    .view-all {
+      display: block; text-align: center; padding: 0.5rem;
+      color: #f87171; font-size: 0.72rem; font-weight: 600;
+      text-decoration: none; margin-top: 0.3rem;
+    }
+    .view-all:hover { text-decoration: underline; }
+    .empty-state { text-align: center; padding: 2rem; color: var(--text3); font-size: 0.78rem; }
+    .loading-pulse { text-align: center; padding: 2rem; color: var(--text3); }
+
+    @media (max-width: 1024px) {
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .quick-actions { grid-template-columns: 1fr 1fr; }
+      .two-col { grid-template-columns: 1fr; }
+      .reset-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; padding: 1rem; }
+      .menu-toggle { display: flex; }
+      .stats-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+      .stat-card .sc-value { font-size: 1.3rem; }
+      .quick-actions { grid-template-columns: 1fr 1fr; }
+      .page-header h1 { font-size: 1.2rem; }
+      .reset-grid { grid-template-columns: 1fr; }
+      .admin-toast { left: 1rem; right: 1rem; min-width: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+
+  <div class="confirm-bar" id="confirmBar">
+    <p id="confirmMsg">Are you sure?</p>
+    <div class="cb-btns">
+      <button class="cb-cancel" onclick="hideConfirm()">Cancel</button>
+      <button class="cb-confirm" id="confirmActionBtn">Confirm</button>
+    </div>
+  </div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">🛡️</div>
+      <div><h2>Finoxa</h2><div class="admin-tag">Admin Panel</div></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="admin-index.html" class="active"><i class="fas fa-grid-2"></i> Dashboard</a>
+      <a href="admin-users.html"><i class="fas fa-users"></i> Users <span class="count-badge" id="sideUsers">0</span></a>
+      <a href="admin-deposits.html"><i class="fas fa-arrow-down"></i> Deposits <span class="count-badge amber" id="sidePendingDep">0</span></a>
+      <a href="admin-withdrawals.html"><i class="fas fa-arrow-up"></i> Withdrawals <span class="count-badge amber" id="sidePendingWth">0</span></a>
+      <a href="admin-investments.html"><i class="fas fa-rocket"></i> Investments</a>
+      <a href="admin-referrals.html"><i class="fas fa-share-nodes"></i> Referrals</a>
+      <a href="admin-transactions.html"><i class="fas fa-clock-rotate-left"></i> Transactions</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sideAvatar">A</div>
+      <div class="sidebar-user-info">
+        <div class="uname" id="sideName">Admin</div>
+        <div class="urole">Administrator</div>
+      </div>
+      <button class="sidebar-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+
+    <div class="page-header">
+      <h1><i class="fas fa-shield-halved"></i> Admin Dashboard</h1>
+      <div class="header-date" id="headerDate"></div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card" onclick="window.location.href='admin-users.html'">
+        <div class="sc-icon red"><i class="fas fa-users"></i></div>
+        <div class="sc-value" id="totalUsers">0</div>
+        <div class="sc-label">Total Users</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-icon green"><i class="fas fa-user-check"></i></div>
+        <div class="sc-value" id="activeUsers">0</div>
+        <div class="sc-label">Active Users</div>
+      </div>
+      <div class="stat-card" onclick="window.location.href='admin-deposits.html'">
+        <div class="sc-icon amber"><i class="fas fa-arrow-down"></i></div>
+        <span class="sc-badge amber" id="pendingDepBadge">0 Pending</span>
+        <div class="sc-value" id="totalDeposits">₦0</div>
+        <div class="sc-label">Total Deposits</div>
+      </div>
+      <div class="stat-card" onclick="window.location.href='admin-withdrawals.html'">
+        <div class="sc-icon purple"><i class="fas fa-arrow-up"></i></div>
+        <span class="sc-badge red" id="pendingWthBadge">0 Pending</span>
+        <div class="sc-value" id="totalWithdrawals">₦0</div>
+        <div class="sc-label">Total Withdrawals</div>
+      </div>
+      <div class="stat-card" onclick="window.location.href='admin-investments.html'">
+        <div class="sc-icon blue"><i class="fas fa-rocket"></i></div>
+        <div class="sc-value" id="totalInvested">₦0</div>
+        <div class="sc-label">Active Investments</div>
+      </div>
+      <div class="stat-card" onclick="window.location.href='admin-referrals.html'">
+        <div class="sc-icon orange"><i class="fas fa-share-nodes"></i></div>
+        <div class="sc-value" id="totalReferrals">0</div>
+        <div class="sc-label">Total Referrals</div>
+      </div>
+      <div class="stat-card" onclick="window.location.href='admin-transactions.html'">
+        <div class="sc-icon rose"><i class="fas fa-clock-rotate-left"></i></div>
+        <div class="sc-value" id="totalTransactions">0</div>
+        <div class="sc-label">Total Transactions</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-icon teal"><i class="fas fa-coins"></i></div>
+        <div class="sc-value" id="totalEarnings">₦0</div>
+        <div class="sc-label">Platform Earnings (15%)</div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section-title"><i class="fas fa-bolt"></i> Quick Actions</div>
+    <div class="quick-actions">
+      <a href="admin-users.html" class="qa-card">
+        <div class="qa-icon r"><i class="fas fa-users"></i></div>
+        <div class="qa-info"><div class="qa-label">Manage Users</div><div class="qa-sub">View, edit, suspend</div></div>
+      </a>
+      <a href="admin-deposits.html" class="qa-card">
+        <div class="qa-icon g"><i class="fas fa-check-circle"></i></div>
+        <div class="qa-info"><div class="qa-label">Approve Deposits</div><div class="qa-sub">Review pending</div></div>
+      </a>
+      <a href="admin-withdrawals.html" class="qa-card">
+        <div class="qa-icon a"><i class="fas fa-paper-plane"></i></div>
+        <div class="qa-info"><div class="qa-label">Process Withdrawals</div><div class="qa-sub">Review pending</div></div>
+      </a>
+      <a href="admin-transactions.html" class="qa-card">
+        <div class="qa-icon b"><i class="fas fa-list"></i></div>
+        <div class="qa-info"><div class="qa-label">Transaction Logs</div><div class="qa-sub">All activities</div></div>
+      </a>
+    </div>
+
+    <!-- Two Column -->
+    <div class="two-col">
+      <div class="data-card">
+        <h3><i class="fas fa-clock-rotate-left"></i> Recent Transactions</h3>
+        <div id="recentTx"><div class="loading-pulse">Loading...</div></div>
+        <a href="admin-transactions.html" class="view-all">View All →</a>
+      </div>
+      <div class="data-card">
+        <h3><i class="fas fa-user-plus"></i> Recent Registrations</h3>
+        <div id="recentUsers"><div class="loading-pulse">Loading...</div></div>
+        <a href="admin-users.html" class="view-all">View All →</a>
+      </div>
+    </div>
+
+    <!-- ============ 🔥 RESET SECTION ============ -->
+    <div class="reset-section">
+      <h3><i class="fas fa-triangle-exclamation"></i> Danger Zone - Reset Data</h3>
+      <p class="reset-sub">Use these buttons to wipe specific collections or the entire platform. This action cannot be undone. Admin accounts are preserved.</p>
+      
+      <div class="reset-grid">
+        <!-- Reset Users -->
+        <div class="reset-card">
+          <div class="rc-icon">👥</div>
+          <div class="rc-name">Reset Users</div>
+          <button class="rc-btn" onclick="resetCollection('users')">
+            <i class="fas fa-trash"></i> Delete All Users
+          </button>
+        </div>
+
+        <!-- Reset Deposits -->
+        <div class="reset-card">
+          <div class="rc-icon">💰</div>
+          <div class="rc-name">Reset Deposits</div>
+          <button class="rc-btn" onclick="resetCollection('deposits')">
+            <i class="fas fa-trash"></i> Delete All Deposits
+          </button>
+        </div>
+
+        <!-- Reset Withdrawals -->
+        <div class="reset-card">
+          <div class="rc-icon">💸</div>
+          <div class="rc-name">Reset Withdrawals</div>
+          <button class="rc-btn" onclick="resetCollection('withdrawals')">
+            <i class="fas fa-trash"></i> Delete All Withdrawals
+          </button>
+        </div>
+
+        <!-- Reset Investments -->
+        <div class="reset-card">
+          <div class="rc-icon">📈</div>
+          <div class="rc-name">Reset Investments</div>
+          <button class="rc-btn" onclick="resetCollection('activePlans')">
+            <i class="fas fa-trash"></i> Delete All Plans
+          </button>
+        </div>
+
+        <!-- Reset Referrals -->
+        <div class="reset-card">
+          <div class="rc-icon">🔗</div>
+          <div class="rc-name">Reset Referrals</div>
+          <button class="rc-btn" onclick="resetCollection('referrals')">
+            <i class="fas fa-trash"></i> Delete All Referrals
+          </button>
+        </div>
+
+        <!-- Reset Transactions -->
+        <div class="reset-card">
+          <div class="rc-icon">📋</div>
+          <div class="rc-name">Reset Transactions</div>
+          <button class="rc-btn" onclick="resetCollection('transactions')">
+            <i class="fas fa-trash"></i> Delete All Transactions
+          </button>
+        </div>
+
+        <!-- 🔥 RESET ALL -->
+        <div class="reset-card reset-all-card">
+          <div class="rc-icon">⚠️</div>
+          <div class="rc-name" style="font-size:0.9rem;">RESET EVERYTHING</div>
+          <button class="rc-btn" onclick="resetAll()">
+            <i class="fas fa-skull"></i> Delete ALL Platform Data
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, getDocs, deleteDoc, collection, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYw02OLQ-AOun_0YLzTd7DaCLsHQqHxGk",
+      authDomain: "finexo-3afc7.firebaseapp.com",
+      projectId: "finexo-3afc7",
+      storageBucket: "finexo-3afc7.firebasestorage.app",
+      messagingSenderId: "443358513817",
+      appId: "1:443358513817:web:756f9aa5e02dc05ca84608"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const fm = (v) => "₦" + Number(v || 0).toLocaleString();
+    let confirmCallback = null;
+
+    function showToast(title, message, type = 'success') {
+      const existing = document.querySelector('.admin-toast');
+      if (existing) existing.remove();
+      const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+      const toast = document.createElement('div');
+      toast.className = `admin-toast ${type}`;
+      toast.innerHTML = `<div class="toast-icon-bx ${type}"><i class="fas ${icons[type]}"></i></div><div class="toast-txt"><h4>${title}</h4><p>${message}</p></div>`;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.style.opacity = '0'; toast.style.transform = 'translateY(20px)';
+          toast.style.transition = 'all 0.3s';
+          setTimeout(() => toast.remove(), 300);
+        }
+      }, 4000);
+    }
+
+    function showConfirm(message, callback) {
+      document.getElementById('confirmMsg').textContent = message;
+      document.getElementById('confirmBar').classList.add('show');
+      confirmCallback = callback;
+      document.getElementById('confirmActionBtn').onclick = () => {
+        hideConfirm();
+        if (confirmCallback) confirmCallback();
+      };
+    }
+    window.hideConfirm = function() {
+      document.getElementById('confirmBar').classList.remove('show');
+      confirmCallback = null;
+    };
+
+    function fmtDate(ts) {
+      if (!ts) return '—';
+      try {
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        const now = new Date();
+        const diff = now - d;
+        if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
+        if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
+        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      } catch(e) { return '—'; }
+    }
+
+    function fmtDateFull(ts) {
+      if (!ts) return '—';
+      try {
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      } catch(e) { return '—'; }
+    }
+
+    document.getElementById('headerDate').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+    document.getElementById('menuToggle').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.toggle('open');
+    });
+
+    document.querySelectorAll('.sidebar-nav a').forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
+      });
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      showConfirm('Are you sure you want to logout?', async () => {
+        await signOut(auth);
+        showToast('Logged Out', 'Redirecting...', 'success');
+        setTimeout(() => window.location.href = 'admin-login.html', 1200);
+      });
+    });
+
+    // 🔥 RESET FUNCTIONS
+    async function deleteSubcollectionDocs(userId, subName) {
+      try {
+        const snap = await getDocs(collection(db, `users/${userId}/${subName}`));
+        const batch = [];
+        snap.forEach(d => batch.push(deleteDoc(doc(db, `users/${userId}/${subName}`, d.id))));
+        await Promise.all(batch);
+        return snap.size;
+      } catch(e) { return 0; }
+    }
+
+    window.resetCollection = function(collectionName) {
+      const names = {
+        users: 'All Users (except admins)',
+        deposits: 'All Deposits',
+        withdrawals: 'All Withdrawals',
+        activePlans: 'All Investments/Plans',
+        referrals: 'All Referrals',
+        transactions: 'All Transactions'
+      };
+
+      showConfirm(`⚠️ Delete ${names[collectionName]}? This CANNOT be undone!`, async () => {
+        showToast('Processing...', `Deleting ${names[collectionName]}...`, 'info');
+
+        try {
+          if (collectionName === 'users') {
+            const usersSnap = await getDocs(collection(db, 'users'));
+            let deleted = 0;
+            for (const userDoc of usersSnap.docs) {
+              const userData = userDoc.data();
+              if (userData.isAdmin === true) continue; // Skip admins
+              // Delete subcollections first
+              await deleteSubcollectionDocs(userDoc.id, 'transactions');
+              await deleteSubcollectionDocs(userDoc.id, 'activePlans');
+              await deleteSubcollectionDocs(userDoc.id, 'referrals');
+              await deleteSubcollectionDocs(userDoc.id, 'deposits');
+              await deleteSubcollectionDocs(userDoc.id, 'withdrawals');
+              // Delete user document
+              await deleteDoc(doc(db, 'users', userDoc.id));
+              deleted++;
+            }
+            showToast('Users Reset', `${deleted} users deleted. Admins preserved.`, 'success');
+          } else {
+            // Delete specific subcollection from all users
+            const usersSnap = await getDocs(collection(db, 'users'));
+            let totalDeleted = 0;
+            for (const userDoc of usersSnap.docs) {
+              totalDeleted += await deleteSubcollectionDocs(userDoc.id, collectionName);
+            }
+            showToast(`${names[collectionName]} Reset`, `${totalDeleted} documents deleted.`, 'success');
+          }
+
+          // Reload dashboard
+          await loadDashboardData();
+
+        } catch(e) {
+          console.error('Reset error:', e);
+          showToast('Error', 'Failed to reset. Try again.', 'error');
+        }
+      });
+    };
+
+    window.resetAll = function() {
+      showConfirm('⚠️ DELETE ALL PLATFORM DATA? This will remove EVERYTHING except admin accounts. Type CONFIRM to proceed.', async () => {
+        showToast('Processing...', 'Deleting all platform data...', 'info');
+
+        try {
+          const usersSnap = await getDocs(collection(db, 'users'));
+          let deletedUsers = 0;
+          let deletedDocs = 0;
+
+          for (const userDoc of usersSnap.docs) {
+            const userData = userDoc.data();
+            if (userData.isAdmin === true) {
+              // Clear admin's subcollections but keep admin account
+              deletedDocs += await deleteSubcollectionDocs(userDoc.id, 'transactions');
+              deletedDocs += await deleteSubcollectionDocs(userDoc.id, 'activePlans');
+              deletedDocs += await deleteSubcollectionDocs(userDoc.id, 'referrals');
+              deletedDocs += await deleteSubcollectionDocs(userDoc.id, 'deposits');
+              deletedDocs += await deleteSubcollectionDocs(userDoc.id, 'withdrawals');
+            } else {
+              // Delete non-admin user completely
+              deletedDocs += await deleteSubcollectionDocs(userDoc.id, 'transactions');
+              deletedDocs += await deleteSubcollectionDocs(userDoc.id, 'activePlans');
+              deletedDocs += await deleteSubcollectionDocs(userDoc.id, 'referrals');
+              deletedDocs += await deleteSubcollectionDocs(userDoc.id, 'deposits');
+              deletedDocs += await deleteSubcollectionDocs(userDoc.id, 'withdrawals');
+              await deleteDoc(doc(db, 'users', userDoc.id));
+              deletedUsers++;
+            }
+          }
+
+          showToast('Platform Reset', `${deletedUsers} users + ${deletedDocs} documents deleted. Admins preserved.`, 'success');
+          await loadDashboardData();
+
+        } catch(e) {
+          console.error('Reset all error:', e);
+          showToast('Error', 'Failed to reset platform. Try again.', 'error');
+        }
+      });
+    };
+
+    // 🔥 AUTH CHECK
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'admin-login.html'; return; }
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
+          await signOut(auth);
+          window.location.href = 'admin-login.html';
+          return;
+        }
+        document.getElementById('sideName').textContent = userDoc.data().fullName || 'Admin';
+        document.getElementById('sideAvatar').textContent = (userDoc.data().fullName || 'A').charAt(0).toUpperCase();
+        await loadDashboardData();
+      } catch(e) { window.location.href = 'admin-login.html'; }
+    });
+
+    async function loadDashboardData() {
+      try {
+        const usersSnap = await getDocs(collection(db, 'users'));
+        const allUsers = [];
+        usersSnap.forEach(d => allUsers.push({ id: d.id, ...d.data() }));
+
+        const totalUsers = allUsers.length;
+        let activeUsers = 0, totalDeposits = 0, totalWithdrawals = 0;
+        let totalInvested = 0, totalReferrals = 0, totalEarnings = 0;
+        let totalTransactions = 0, pendingDeposits = 0, pendingWithdrawals = 0;
+
+        for (const user of allUsers) {
+          try {
+            const plansSnap = await getDocs(collection(db, `users/${user.id}/activePlans`));
+            let hasActive = false;
+            plansSnap.forEach(p => {
+              const pd = p.data();
+              if (pd.status === 'active' && pd.daysLeft > 0) { hasActive = true; totalInvested += (pd.capital || 0); }
+            });
+            if (hasActive) activeUsers++;
+          } catch(e) {}
+
+          try { const refSnap = await getDocs(collection(db, `users/${user.id}/referrals`)); totalReferrals += refSnap.size; } catch(e) {}
+
+          try {
+            const depSnap = await getDocs(query(collection(db, `users/${user.id}/deposits`), where('status', '==', 'pending')));
+            pendingDeposits += depSnap.size;
+            const allDepSnap = await getDocs(collection(db, `users/${user.id}/deposits`));
+            allDepSnap.forEach(d => { if (d.data().status === 'approved' || d.data().status === 'completed') totalDeposits += (d.data().amount || 0); });
+          } catch(e) {}
+
+          try {
+            const wthSnap = await getDocs(query(collection(db, `users/${user.id}/withdrawals`), where('status', '==', 'pending')));
+            pendingWithdrawals += wthSnap.size;
+            const allWthSnap = await getDocs(collection(db, `users/${user.id}/withdrawals`));
+            allWthSnap.forEach(w => {
+              const wd = w.data();
+              if (wd.status === 'approved' || wd.status === 'completed') totalWithdrawals += (wd.amount || 0);
+              if (wd.charge) totalEarnings += (wd.charge || 0);
+            });
+          } catch(e) {}
+
+          try { const txSnap = await getDocs(collection(db, `users/${user.id}/transactions`)); totalTransactions += txSnap.size; } catch(e) {}
+        }
+
+        document.getElementById('totalUsers').textContent = totalUsers;
+        document.getElementById('activeUsers').textContent = activeUsers;
+        document.getElementById('totalDeposits').textContent = fm(totalDeposits);
+        document.getElementById('totalWithdrawals').textContent = fm(totalWithdrawals);
+        document.getElementById('totalInvested').textContent = fm(totalInvested);
+        document.getElementById('totalReferrals').textContent = totalReferrals;
+        document.getElementById('totalTransactions').textContent = totalTransactions;
+        document.getElementById('totalEarnings').textContent = fm(totalEarnings);
+        document.getElementById('pendingDepBadge').textContent = pendingDeposits + ' Pending';
+        document.getElementById('pendingWthBadge').textContent = pendingWithdrawals + ' Pending';
+        document.getElementById('sidePendingDep').textContent = pendingDeposits;
+        document.getElementById('sidePendingWth').textContent = pendingWithdrawals;
+        document.getElementById('sideUsers').textContent = totalUsers;
+
+        await loadRecentTransactions();
+        await loadRecentUsers();
+      } catch(e) { console.error('Dashboard load error:', e); }
+    }
+
+    async function loadRecentTransactions() {
+      const container = document.getElementById('recentTx');
+      const allTx = [];
+      try {
+        const usersSnap = await getDocs(collection(db, 'users'));
+        for (const userDoc of usersSnap.docs) {
+          try {
+            const txSnap = await getDocs(query(collection(db, `users/${userDoc.id}/transactions`), orderBy('createdAt', 'desc'), limit(2)));
+            txSnap.forEach(tx => allTx.push({ ...tx.data(), userId: userDoc.id, userName: userDoc.data().fullName || 'User', date: tx.data().createdAt }));
+          } catch(e) {}
+        }
+        allTx.sort((a, b) => (b.date?.toMillis?.() || 0) - (a.date?.toMillis?.() || 0));
+        const recent = allTx.slice(0, 10);
+        if (!recent.length) { container.innerHTML = '<div class="empty-state">No transactions yet</div>'; return; }
+        container.innerHTML = recent.map(tx => {
+          const typeName = (tx.type || 'transaction').replace(/_/g, ' ');
+          let dotClass = 'blue', amountClass = 'green';
+          if (tx.type === 'withdrawal') { dotClass = 'amber'; amountClass = 'amber'; }
+          else if (tx.type === 'investment_purchase') { dotClass = 'red'; }
+          return `<div class="data-row"><div class="dr-left"><div class="dr-dot ${dotClass}"></div><div><div style="font-weight:600;font-size:0.75rem;">${typeName}</div><div style="font-size:0.65rem;color:var(--text3);">${tx.userName} • ${fmtDate(tx.date)}</div></div></div><div class="dr-amount ${amountClass}">${fm(tx.amount || 0)}</div></div>`;
+        }).join('');
+      } catch(e) { container.innerHTML = '<div class="empty-state">Error loading</div>'; }
+    }
+
+    async function loadRecentUsers() {
+      const container = document.getElementById('recentUsers');
+      try {
+        const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'), limit(5));
+        const snap = await getDocs(q);
+        if (snap.empty) { container.innerHTML = '<div class="empty-state">No users yet</div>'; return; }
+        container.innerHTML = '';
+        snap.forEach(doc => {
+          const u = doc.data();
+          const row = document.createElement('div');
+          row.className = 'data-row';
+          row.innerHTML = `<div class="dr-left"><div class="dr-dot green"></div><div><div style="font-weight:600;font-size:0.75rem;">${u.fullName || 'User'}</div><div style="font-size:0.65rem;color:var(--text3);">@${u.username || 'user'} • ${fmtDateFull(u.createdAt)}</div></div></div><span style="font-size:0.7rem;color:var(--text3);">${fm(u.wallet || 0)}</span>`;
+          container.appendChild(row);
+        });
+      } catch(e) { container.innerHTML = '<div class="empty-state">Error loading</div>'; }
+    }
+
+    console.log('🛡️ Admin Dashboard Ready');
+  </script>
+</body>
+</html>
