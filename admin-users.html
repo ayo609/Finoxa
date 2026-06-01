@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Finoxa Admin • Users Management</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --surface2: #1a1a1a;
+      --admin: #dc2626;
+      --admin-light: #ef4444;
+      --orange: #f97316;
+      --amber: #f59e0b;
+      --green: #22c55e;
+      --text: #ffffff;
+      --text2: #a0a0a0;
+      --text3: #666666;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.04);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+    }
+
+    /* ============ SIDEBAR ============ */
+    .sidebar {
+      width: 250px;
+      height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 100;
+      transition: transform 0.3s;
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(249,115,22,0.15));
+      border: 2px solid rgba(239,68,68,0.3);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+
+    .sidebar-brand h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1rem; font-weight: 700;
+      background: linear-gradient(135deg, #f87171, #fb923c, #fbbf24);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .admin-tag { font-size: 0.6rem; color: #f87171; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+
+    .sidebar-nav {
+      display: flex; flex-direction: column; gap: 0.2rem; flex: 1;
+    }
+    .sidebar-nav a {
+      display: flex; align-items: center; gap: 0.7rem;
+      padding: 0.65rem 0.85rem; border-radius: 10px;
+      color: var(--text2); text-decoration: none;
+      font-weight: 500; font-size: 0.83rem; transition: all 0.3s;
+    }
+    .sidebar-nav a:hover, .sidebar-nav a.active {
+      background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(249,115,22,0.08));
+      color: #fff;
+    }
+    .sidebar-nav a i { width: 18px; text-align: center; }
+    .sidebar-nav a .badge {
+      margin-left: auto; background: var(--admin); color: #fff;
+      font-size: 0.6rem; padding: 0.12rem 0.45rem; border-radius: 20px; font-weight: 700;
+    }
+
+    .sidebar-user {
+      margin-top: auto; padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .sidebar-avatar {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.8rem;
+    }
+    .sidebar-user-info { flex: 1; min-width: 0; }
+    .sidebar-user-info .uname { font-weight: 600; font-size: 0.78rem; }
+    .sidebar-user-info .urole { color: #f87171; font-size: 0.62rem; }
+    .sidebar-logout {
+      background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 8px; color: #f87171; cursor: pointer;
+      font-size: 0.8rem; padding: 0.35rem 0.55rem; transition: all 0.3s;
+    }
+    .sidebar-logout:hover { background: rgba(239,68,68,0.2); }
+
+    /* ============ MAIN CONTENT ============ */
+    .main-content {
+      flex: 1; margin-left: 250px; padding: 1.5rem 2rem; min-height: 100vh;
+    }
+
+    .menu-toggle {
+      display: none; position: fixed; top: 1rem; left: 1rem; z-index: 200;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; width: 40px; height: 40px;
+      align-items: center; justify-content: center;
+      color: #fff; font-size: 1.1rem; cursor: pointer;
+    }
+
+    /* Page Header */
+    .page-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+    }
+    .page-header h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem; font-weight: 700;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .page-header h1 i { color: #f87171; }
+
+    /* Search & Filter */
+    .search-filter-bar {
+      display: flex; gap: 0.6rem; margin-bottom: 1.2rem; flex-wrap: wrap;
+      align-items: center;
+    }
+    .search-wrap {
+      flex: 1; min-width: 200px; position: relative;
+    }
+    .search-wrap input {
+      width: 100%; padding: 0.7rem 1rem 0.7rem 2.5rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; color: #fff; font-size: 0.85rem;
+      font-family: 'Plus Jakarta Sans', sans-serif; outline: none;
+    }
+    .search-wrap input:focus { border-color: rgba(239,68,68,0.3); }
+    .search-wrap i {
+      position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%);
+      color: var(--text3); font-size: 0.8rem;
+    }
+    .filter-select {
+      padding: 0.7rem 1rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; color: #fff; font-size: 0.8rem;
+      font-family: 'Plus Jakarta Sans', sans-serif; outline: none; cursor: pointer;
+    }
+    .results-count {
+      font-size: 0.75rem; color: var(--text3); white-space: nowrap;
+    }
+
+    /* Users Table */
+    .table-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden; margin-bottom: 1rem;
+    }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    th {
+      text-align: left; padding: 0.75rem 0.8rem;
+      color: var(--text3); font-weight: 600; font-size: 0.65rem;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 0.65rem 0.8rem; border-bottom: 1px solid var(--border2);
+      white-space: nowrap;
+    }
+    tr:hover td { background: rgba(255,255,255,0.01); }
+
+    .user-mini {
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .user-av {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.7rem; flex-shrink: 0;
+      background: linear-gradient(135deg, #f97316, #ef4444);
+    }
+    .status-badge {
+      padding: 0.2rem 0.5rem; border-radius: 10px;
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+    }
+    .status-badge.active { background: rgba(34,197,94,0.1); color: #4ade80; }
+    .status-badge.suspended { background: rgba(239,68,68,0.1); color: #f87171; }
+
+    .action-btns { display: flex; gap: 0.3rem; }
+    .action-btn {
+      padding: 0.3rem 0.6rem; border-radius: 8px;
+      font-size: 0.65rem; font-weight: 600; cursor: pointer;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--text2); transition: all 0.3s;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      white-space: nowrap;
+    }
+    .action-btn:hover { border-color: rgba(255,255,255,0.2); color: #fff; }
+    .action-btn.view { color: #60a5fa; }
+    .action-btn.wallet { color: #fbbf24; }
+    .action-btn.suspend { color: #f87171; }
+    .action-btn.activate { color: #4ade80; }
+
+    /* ============ TOAST NOTIFICATION ============ */
+    .admin-toast {
+      position: fixed; bottom: 25px; right: 25px; z-index: 10000;
+      background: rgba(18,18,18,0.95); backdrop-filter: blur(30px);
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;
+      padding: 0.9rem 1.2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      display: flex; align-items: center; gap: 0.8rem;
+      animation: toastIn 0.4s cubic-bezier(0.16,1,0.3,1);
+      min-width: 300px; max-width: 420px;
+    }
+    .admin-toast.success { border-bottom: 3px solid #22c55e; }
+    .admin-toast.error { border-bottom: 3px solid #ef4444; }
+    .admin-toast.warning { border-bottom: 3px solid #f59e0b; }
+    .admin-toast.info { border-bottom: 3px solid #60a5fa; }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .toast-icon-bx {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; flex-shrink: 0;
+    }
+    .toast-icon-bx.success { background: rgba(34,197,94,0.12); color: #4ade80; }
+    .toast-icon-bx.error { background: rgba(239,68,68,0.12); color: #f87171; }
+    .toast-icon-bx.warning { background: rgba(245,158,11,0.12); color: #fbbf24; }
+    .toast-icon-bx.info { background: rgba(96,165,250,0.12); color: #60a5fa; }
+    .toast-txt h4 { font-size: 0.8rem; font-weight: 700; color: #fff; margin-bottom: 0.1rem; }
+    .toast-txt p { font-size: 0.7rem; color: rgba(255,255,255,0.5); }
+
+    /* ============ INLINE CONFIRMATION BAR ============ */
+    .confirm-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      background: var(--surface2); border-bottom: 1px solid var(--border);
+      padding: 0.8rem 1.5rem; display: none;
+      align-items: center; justify-content: center; gap: 1rem;
+      animation: slideDown 0.3s ease;
+    }
+    .confirm-bar.show { display: flex; }
+    @keyframes slideDown {
+      from { transform: translateY(-100%); }
+      to { transform: translateY(0); }
+    }
+    .confirm-bar p { font-size: 0.85rem; color: var(--text2); }
+    .confirm-bar .cb-btns { display: flex; gap: 0.5rem; }
+    .confirm-bar button {
+      padding: 0.4rem 1rem; border-radius: 8px; font-weight: 600;
+      font-size: 0.75rem; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+      border: none; transition: all 0.3s;
+    }
+    .cb-confirm { background: var(--admin); color: #fff; }
+    .cb-confirm:hover { background: #dc2626; }
+    .cb-cancel { background: rgba(255,255,255,0.05); color: var(--text2); border: 1px solid var(--border); }
+    .cb-cancel:hover { background: rgba(255,255,255,0.1); }
+
+    /* ============ WALLET MODAL PANEL ============ */
+    .wallet-panel {
+      display: none; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 14px;
+      padding: 1.2rem; margin: 0.5rem 0;
+      animation: fadeSlide 0.3s ease;
+    }
+    .wallet-panel.show { display: block; }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .wallet-panel h4 {
+      font-size: 0.85rem; font-weight: 700; margin-bottom: 0.8rem;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .wallet-form-row {
+      display: flex; gap: 0.6rem; margin-bottom: 0.6rem; flex-wrap: wrap;
+    }
+    .wallet-form-row input {
+      flex: 1; min-width: 120px; padding: 0.6rem 0.8rem;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      border-radius: 10px; color: #fff; font-size: 0.8rem;
+      font-family: 'Plus Jakarta Sans', sans-serif; outline: none;
+    }
+    .wallet-form-row input:focus { border-color: rgba(239,68,68,0.3); }
+    .btn-credit {
+      padding: 0.6rem 1.2rem; background: rgba(34,197,94,0.15);
+      border: 1px solid rgba(34,197,94,0.3); border-radius: 10px;
+      color: #4ade80; font-weight: 700; font-size: 0.75rem;
+      cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: all 0.3s; white-space: nowrap;
+    }
+    .btn-credit:hover { background: #22c55e; color: #fff; }
+    .btn-debit {
+      padding: 0.6rem 1.2rem; background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.3); border-radius: 10px;
+      color: #f87171; font-weight: 700; font-size: 0.75rem;
+      cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: all 0.3s; white-space: nowrap;
+    }
+    .btn-debit:hover { background: #ef4444; color: #fff; }
+    .btn-cancel-sm {
+      padding: 0.6rem 1.2rem; background: transparent;
+      border: 1px solid var(--border); border-radius: 10px;
+      color: var(--text2); font-weight: 600; font-size: 0.75rem;
+      cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center; padding: 3rem; color: var(--text3);
+    }
+    .empty-state i { font-size: 2.5rem; margin-bottom: 0.8rem; opacity: 0.3; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; padding: 1rem; }
+      .menu-toggle { display: flex; }
+      .page-header h1 { font-size: 1.2rem; }
+      .admin-toast { left: 1rem; right: 1rem; min-width: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+
+  <!-- ============ CONFIRMATION BAR ============ -->
+  <div class="confirm-bar" id="confirmBar">
+    <p id="confirmMsg">Are you sure?</p>
+    <div class="cb-btns">
+      <button class="cb-cancel" onclick="hideConfirm()">Cancel</button>
+      <button class="cb-confirm" id="confirmActionBtn">Confirm</button>
+    </div>
+  </div>
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">🛡️</div>
+      <div>
+        <h2>Finoxa</h2>
+        <div class="admin-tag">Admin Panel</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="admin-index.html"><i class="fas fa-grid-2"></i> Dashboard</a>
+      <a href="admin-users.html" class="active"><i class="fas fa-users"></i> Users <span class="badge" id="sideUsers">0</span></a>
+      <a href="admin-deposits.html"><i class="fas fa-arrow-down"></i> Deposits</a>
+      <a href="admin-withdrawals.html"><i class="fas fa-arrow-up"></i> Withdrawals</a>
+      <a href="admin-investments.html"><i class="fas fa-rocket"></i> Investments</a>
+      <a href="admin-referrals.html"><i class="fas fa-share-nodes"></i> Referrals</a>
+      <a href="admin-transactions.html"><i class="fas fa-clock-rotate-left"></i> Transactions</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sideAvatar">A</div>
+      <div class="sidebar-user-info">
+        <div class="uname" id="sideName">Admin</div>
+        <div class="urole">Administrator</div>
+      </div>
+      <button class="sidebar-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN CONTENT ============ -->
+  <main class="main-content">
+
+    <div class="page-header">
+      <h1><i class="fas fa-users"></i> Users Management</h1>
+      <span style="font-size:0.78rem;color:var(--text3);" id="totalCount">0 users</span>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="search-filter-bar">
+      <div class="search-wrap">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Search by name, username, or email..." oninput="renderUsers()">
+      </div>
+      <select class="filter-select" id="statusFilter" onchange="renderUsers()">
+        <option value="all">All Status</option>
+        <option value="active">Active</option>
+        <option value="suspended">Suspended</option>
+      </select>
+      <span class="results-count" id="resultsCount">Showing 0 users</span>
+    </div>
+
+    <!-- Users Table -->
+    <div class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Balance</th>
+              <th>Status</th>
+              <th>Joined</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+            <tr><td colspan="8"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading users...</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Wallet Panel -->
+    <div class="wallet-panel" id="walletPanel">
+      <h4>💳 Wallet Management - <span id="walletUserName">User</span> (Balance: <span id="walletBalance">₦0</span>)</h4>
+      <div class="wallet-form-row">
+        <input type="number" id="creditAmount" placeholder="Amount to add" min="1">
+        <input type="text" id="creditReason" placeholder="Reason (optional)">
+        <button class="btn-credit" onclick="creditWallet()"><i class="fas fa-plus"></i> Credit Wallet</button>
+      </div>
+      <div class="wallet-form-row">
+        <input type="number" id="debitAmount" placeholder="Amount to deduct" min="1">
+        <input type="text" id="debitReason" placeholder="Reason (optional)">
+        <button class="btn-debit" onclick="debitWallet()"><i class="fas fa-minus"></i> Debit Wallet</button>
+      </div>
+      <button class="btn-cancel-sm" onclick="closeWalletPanel()">Cancel</button>
+    </div>
+
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, getDocs, setDoc, collection, updateDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYw02OLQ-AOun_0YLzTd7DaCLsHQqHxGk",
+      authDomain: "finexo-3afc7.firebaseapp.com",
+      projectId: "finexo-3afc7",
+      storageBucket: "finexo-3afc7.firebasestorage.app",
+      messagingSenderId: "443358513817",
+      appId: "1:443358513817:web:756f9aa5e02dc05ca84608"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const fm = (v) => "₦" + Number(v || 0).toLocaleString();
+    let allUsers = [];
+    let currentAdminId = null;
+    let selectedUserId = null;
+    let selectedUserData = null;
+    let confirmCallback = null;
+
+    // 🔥 TOAST
+    function showToast(title, message, type = 'success') {
+      const existing = document.querySelector('.admin-toast');
+      if (existing) existing.remove();
+      const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+      const toast = document.createElement('div');
+      toast.className = `admin-toast ${type}`;
+      toast.innerHTML = `<div class="toast-icon-bx ${type}"><i class="fas ${icons[type]}"></i></div><div class="toast-txt"><h4>${title}</h4><p>${message}</p></div>`;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.style.opacity = '0'; toast.style.transform = 'translateY(20px)';
+          toast.style.transition = 'all 0.3s';
+          setTimeout(() => toast.remove(), 300);
+        }
+      }, 4000);
+    }
+
+    // 🔥 CONFIRMATION BAR
+    function showConfirm(message, callback) {
+      document.getElementById('confirmMsg').textContent = message;
+      document.getElementById('confirmBar').classList.add('show');
+      confirmCallback = callback;
+      document.getElementById('confirmActionBtn').onclick = () => {
+        hideConfirm();
+        if (confirmCallback) confirmCallback();
+      };
+    }
+    window.hideConfirm = function() {
+      document.getElementById('confirmBar').classList.remove('show');
+      confirmCallback = null;
+    };
+
+    // 🔥 FORMAT DATE
+    function fmtDate(ts) {
+      if (!ts) return '—';
+      try {
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      } catch(e) { return '—'; }
+    }
+
+    // Mobile menu
+    document.getElementById('menuToggle').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.toggle('open');
+    });
+
+    // 🔥 LOGOUT - Redirects to admin-login.html
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      showConfirm('Are you sure you want to logout?', async () => {
+        await signOut(auth);
+        showToast('Logged Out', 'Redirecting...', 'success');
+        setTimeout(() => window.location.href = 'admin-login.html', 1200);
+      });
+    });
+
+    // 🔥 AUTH CHECK
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'admin-login.html'; return; }
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
+          await signOut(auth);
+          window.location.href = 'admin-login.html';
+          return;
+        }
+        currentAdminId = user.uid;
+        document.getElementById('sideName').textContent = userDoc.data().fullName || 'Admin';
+        document.getElementById('sideAvatar').textContent = (userDoc.data().fullName || 'A').charAt(0).toUpperCase();
+        await loadUsers();
+      } catch(e) {
+        window.location.href = 'admin-login.html';
+      }
+    });
+
+    // 🔥 LOAD USERS
+    async function loadUsers() {
+      try {
+        const snap = await getDocs(collection(db, 'users'));
+        allUsers = [];
+        snap.forEach(d => {
+          const data = d.data();
+          if (!data.isAdmin) {
+            allUsers.push({ id: d.id, ...data });
+          }
+        });
+        allUsers.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+        document.getElementById('sideUsers').textContent = allUsers.length;
+        document.getElementById('totalCount').textContent = allUsers.length + ' users';
+        renderUsers();
+      } catch(e) {
+        console.error('Load error:', e);
+      }
+    }
+
+    // 🔥 RENDER USERS
+    window.renderUsers = function() {
+      const search = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+      const statusFilter = document.getElementById('statusFilter')?.value || 'all';
+
+      let filtered = allUsers;
+      if (search) {
+        filtered = filtered.filter(u =>
+          (u.fullName || '').toLowerCase().includes(search) ||
+          (u.username || '').toLowerCase().includes(search) ||
+          (u.email || '').toLowerCase().includes(search)
+        );
+      }
+      if (statusFilter !== 'all') {
+        filtered = filtered.filter(u => u.status === statusFilter);
+      }
+
+      document.getElementById('resultsCount').textContent = `Showing ${filtered.length} of ${allUsers.length} users`;
+
+      const tbody = document.getElementById('usersTableBody');
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fas fa-users-slash"></i><p>No users found</p></div></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(u => {
+        const initial = (u.fullName || 'U').charAt(0).toUpperCase();
+        const statusClass = u.status === 'suspended' ? 'suspended' : 'active';
+        const statusLabel = u.status === 'suspended' ? 'Suspended' : 'Active';
+        const suspendAction = u.status === 'suspended' ? 'activate' : 'suspend';
+        const suspendLabel = u.status === 'suspended' ? 'Activate' : 'Suspend';
+
+        return `
+          <tr>
+            <td>
+              <div class="user-mini">
+                <div class="user-av">${initial}</div>
+                <span style="font-weight:600;">${u.fullName || 'N/A'}</span>
+              </div>
+            </td>
+            <td style="color:#fb923c;">@${u.username || 'user'}</td>
+            <td style="font-size:0.75rem;">${u.email || '—'}</td>
+            <td style="font-size:0.75rem;">${u.phone || '—'}</td>
+            <td style="font-family:'Space Grotesk',monospace;font-weight:700;">${fm(u.wallet || 0)}</td>
+            <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+            <td style="font-size:0.72rem;color:var(--text3);">${fmtDate(u.createdAt)}</td>
+            <td>
+              <div class="action-btns">
+                <button class="action-btn view" onclick="viewUser('${u.id}')"><i class="fas fa-eye"></i> View</button>
+                <button class="action-btn wallet" onclick="openWalletPanel('${u.id}')"><i class="fas fa-wallet"></i> Wallet</button>
+                <button class="action-btn ${suspendAction}" onclick="toggleSuspend('${u.id}')"><i class="fas fa-power-off"></i> ${suspendLabel}</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    };
+
+    // 🔥 VIEW USER
+    window.viewUser = function(userId) {
+      const user = allUsers.find(u => u.id === userId);
+      if (!user) return;
+      showToast('User Info', `${user.fullName} • ${fm(user.wallet || 0)} • ${user.email}`, 'info');
+    };
+
+    // 🔥 WALLET PANEL
+    window.openWalletPanel = function(userId) {
+      const user = allUsers.find(u => u.id === userId);
+      if (!user) return;
+      selectedUserId = userId;
+      selectedUserData = user;
+      document.getElementById('walletUserName').textContent = user.fullName || 'User';
+      document.getElementById('walletBalance').textContent = fm(user.wallet || 0);
+      document.getElementById('creditAmount').value = '';
+      document.getElementById('creditReason').value = '';
+      document.getElementById('debitAmount').value = '';
+      document.getElementById('debitReason').value = '';
+      document.getElementById('walletPanel').classList.add('show');
+      document.getElementById('walletPanel').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.closeWalletPanel = function() {
+      document.getElementById('walletPanel').classList.remove('show');
+      selectedUserId = null;
+      selectedUserData = null;
+    };
+
+    // 🔥 CREDIT WALLET
+    window.creditWallet = async function() {
+      if (!selectedUserId) return;
+      const amount = Number(document.getElementById('creditAmount').value);
+      const reason = document.getElementById('creditReason').value.trim() || 'Manual credit by admin';
+
+      if (!amount || amount <= 0) return showToast('Invalid Amount', 'Enter a valid amount', 'warning');
+
+      showConfirm(`Credit ${fm(amount)} to ${selectedUserData?.fullName || 'user'}?`, async () => {
+        try {
+          await updateDoc(doc(db, 'users', selectedUserId), {
+            wallet: increment(amount),
+            totalEarnings: increment(amount),
+            updatedAt: serverTimestamp()
+          });
+
+          await setDoc(doc(collection(db, `users/${selectedUserId}/transactions`)), {
+            type: 'wallet_credit',
+            amount: amount,
+            status: 'completed',
+            description: `Admin Credit: ${reason}`,
+            adminId: currentAdminId,
+            createdAt: serverTimestamp()
+          });
+
+          const idx = allUsers.findIndex(u => u.id === selectedUserId);
+          if (idx >= 0) allUsers[idx].wallet = (allUsers[idx].wallet || 0) + amount;
+
+          document.getElementById('walletBalance').textContent = fm(allUsers[idx].wallet);
+          document.getElementById('creditAmount').value = '';
+          document.getElementById('creditReason').value = '';
+          renderUsers();
+          showToast('Wallet Credited', `${fm(amount)} added to wallet`, 'success');
+        } catch(e) {
+          showToast('Error', e.message || 'Failed to credit wallet', 'error');
+        }
+      });
+    };
+
+    // 🔥 DEBIT WALLET
+    window.debitWallet = async function() {
+      if (!selectedUserId) return;
+      const amount = Number(document.getElementById('debitAmount').value);
+      const reason = document.getElementById('debitReason').value.trim() || 'Manual deduction by admin';
+      const currentBalance = selectedUserData?.wallet || 0;
+
+      if (!amount || amount <= 0) return showToast('Invalid Amount', 'Enter a valid amount', 'warning');
+      if (amount > currentBalance) return showToast('Insufficient Balance', `User only has ${fm(currentBalance)}`, 'error');
+
+      showConfirm(`Deduct ${fm(amount)} from ${selectedUserData?.fullName || 'user'}?`, async () => {
+        try {
+          await updateDoc(doc(db, 'users', selectedUserId), {
+            wallet: increment(-amount),
+            updatedAt: serverTimestamp()
+          });
+
+          await setDoc(doc(collection(db, `users/${selectedUserId}/transactions`)), {
+            type: 'wallet_debit',
+            amount: amount,
+            status: 'completed',
+            description: `Admin Deduction: ${reason}`,
+            adminId: currentAdminId,
+            createdAt: serverTimestamp()
+          });
+
+          const idx = allUsers.findIndex(u => u.id === selectedUserId);
+          if (idx >= 0) allUsers[idx].wallet = (allUsers[idx].wallet || 0) - amount;
+
+          document.getElementById('walletBalance').textContent = fm(allUsers[idx].wallet);
+          document.getElementById('debitAmount').value = '';
+          document.getElementById('debitReason').value = '';
+          renderUsers();
+          showToast('Wallet Debited', `${fm(amount)} deducted from wallet`, 'success');
+        } catch(e) {
+          showToast('Error', e.message || 'Failed to debit wallet', 'error');
+        }
+      });
+    };
+
+    // 🔥 TOGGLE SUSPEND
+    window.toggleSuspend = function(userId) {
+      const user = allUsers.find(u => u.id === userId);
+      if (!user) return;
+      const newStatus = user.status === 'suspended' ? 'active' : 'suspended';
+      const actionLabel = newStatus === 'suspended' ? 'Suspend' : 'Activate';
+
+      showConfirm(`${actionLabel} ${user.fullName || 'user'}?`, async () => {
+        try {
+          await updateDoc(doc(db, 'users', userId), {
+            status: newStatus,
+            updatedAt: serverTimestamp()
+          });
+          const idx = allUsers.findIndex(u => u.id === userId);
+          if (idx >= 0) allUsers[idx].status = newStatus;
+          renderUsers();
+          showToast('Status Updated', `User ${newStatus === 'suspended' ? 'suspended' : 'activated'}`, 'success');
+        } catch(e) {
+          showToast('Error', e.message || 'Failed to update status', 'error');
+        }
+      });
+    };
+
+    console.log('🛡️ Users Management Ready');
+  </script>
+</body>
+</html>
