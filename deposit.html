@@ -417,13 +417,13 @@
         <div class="bank-detail-row">
           <span class="bd-label">Account Number</span>
           <span class="bd-value">
-            9167378733
+            2063255964
             <button class="copy-btn-sm" onclick="copyAccount()"><i class="fas fa-copy"></i> Copy</button>
           </span>
         </div>
         <div class="bank-detail-row">
           <span class="bd-label">Bank</span>
-          <span class="bd-value">Palmpay</span>
+          <span class="bd-value">Kuda</span>
         </div>
         <div class="bank-detail-row">
           <span class="bd-label">Amount to Pay</span>
@@ -674,7 +674,7 @@
 
     // 🔥 COPY ACCOUNT NUMBER
     window.copyAccount = function() {
-      const accNum = '9167378733';
+      const accNum = '2063255964';
       navigator.clipboard?.writeText(accNum).then(() => {
         Swal.fire({ 
           icon: 'success', 
@@ -797,7 +797,7 @@
             <p style="margin:0.3rem 0"><strong>Amount:</strong> ${fm(selectedAmount)}</p>
             <p style="margin:0.3rem 0"><strong>Sender:</strong> ${senderName}</p>
             ${phoneNumber ? `<p style="margin:0.3rem 0"><strong>Phone:</strong> ${phoneNumber}</p>` : ''}
-            <p style="margin:0.3rem 0"><strong>Account:</strong> 9167378733 (Palmpay)</p>
+            <p style="margin:0.3rem 0"><strong>Account:</strong> 2063255964 (Kuda)</p>
             <p style="margin:0.3rem 0"><strong>Screenshot:</strong> ${screenshotFile.name}</p>
           </div>
           <p style="font-size:0.75rem;color:#f59e0b;margin-top:0.5rem;">⚠️ Ensure all details are correct before submitting.</p>
@@ -839,10 +839,10 @@
           phoneNumber: phoneNumber || '',
           amount: selectedAmount,
           status: 'pending',
-          method: 'Palmpay Transfer',
+          method: 'kuda Transfer',
           accountName: 'Taufeek Muftau',
-          accountNumber: '9167378733',
-          bankName: 'Palmpay',
+          accountNumber: '2063255964',
+          bankName: 'kuda',
           screenshotBase64: screenshotBase64,
           createdAt: serverTimestamp()
         });
